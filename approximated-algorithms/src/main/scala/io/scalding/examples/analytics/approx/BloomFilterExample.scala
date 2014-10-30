@@ -24,6 +24,9 @@ case class Incident(
                       )
 
 object Incident {
+  val fields = List('incidntNum, 'category, 'descript, 'dayOfWeek, 'date, 'time,
+    'pdDistrict, 'resolution, 'address, 'locX, 'locY, 'location)
+  
   type IncidentTuple = (Long, String, String, String, String, String, String, String, String, String, String, String)
   
   def fromTuple(tuple: IncidentTuple) =
@@ -43,23 +46,25 @@ object Incident {
     )
 }
 
-object SkipHeaderTypedCsv extends TypedSeperatedFile {
-  override val separator = ","
-  override val skipHeader = true
-}
-
 /**
  * Given the Incidents of a specific day (daily argument) and the historical one to join to (historical argument)
  * returns all daily incidents together with the historical one of the same category in the same police district
  * grouped by category and district
  */
-class BloomFilterExample(args: Args) extends Job(args) {
+class BloomFilterExample(args: Args) extends Job(args) with FieldConversions {
 
   val size = args.optional("estimatedSize") map { _.toInt } getOrElse 100000
   val fpProb = args.optional("accuracy") map { _.toDouble } getOrElse 0.01d
 
-  val historicalIncidents = SkipHeaderTypedCsv[Incident.IncidentTuple](args("historical")) map { Incident.fromTuple }
-  val dailyIncidents = SkipHeaderTypedCsv[Incident.IncidentTuple](args("daily")) map { Incident.fromTuple }
+  val historicalIncidents = Csv(args("historical"), fields = Incident.fields, skipHeader = true)
+    .read
+    .toTypedPipe[Incident.IncidentTuple](Incident.fields)
+    .map { Incident.fromTuple }
+
+  val dailyIncidents = Csv(args("daily"), fields = Incident.fields, skipHeader = true)
+    .read
+    .toTypedPipe[Incident.IncidentTuple](Incident.fields)
+    .map { Incident.fromTuple }
 
   implicit val bloomFilterMonoid = BloomFilter(size, fpProb)
 

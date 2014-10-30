@@ -1,27 +1,12 @@
 package io.scalding.examples.analytics.approx
 
-import com.twitter.scalding.{Csv, TypedCsv, JobTest}
+import com.twitter.scalding.{FieldConversions, Csv, TypedCsv, JobTest}
 import org.scalatest.{Matchers, FlatSpec}
 
 import scala.collection.mutable
 
 
-/*
-                      incidntNum: Long,
-                      category: String,
-                      descript: String,
-                      dayOfWeek: String,
-                      date: String,
-                      time: String,
-                      pdDistrict: String,
-                      resolution: String,
-                      address: String,
-                      locX: String,
-                      locY: String,
-                      location: String
- */
-
-class BloomFilterExampleSpec extends FlatSpec with Matchers {
+class BloomFilterExampleSpec extends FlatSpec with Matchers with FieldConversions {
 
   def fakeIncident(index: Int, category: String, district: String) =
     (s"$index", category, "desc", "dayOfWeek", "date", "time", district, "resolution", "addres", "x", "y", "(x, y)")
@@ -49,8 +34,8 @@ class BloomFilterExampleSpec extends FlatSpec with Matchers {
       .arg("daily", "daily")
       .arg("estimatedSize", size.toString)
       .arg("output", "output")
-      .source(SkipHeaderTypedCsv[Incident.IncidentTuple]("historical"), historical)
-      .source(SkipHeaderTypedCsv[Incident.IncidentTuple]("daily"), daily)
+      .source(Csv("historical", fields = Incident.fields, skipHeader = true), historical)
+      .source(Csv("daily", fields = Incident.fields, skipHeader = true), daily)
       .sink(Csv("output")) {
         buffer: mutable.Buffer[(String, String, Long, String, String, String, String)] =>
             buffer.toList.map { _._3 } should not contain (atLeastOneOf(90003, 90004))
