@@ -1,107 +1,55 @@
 package io.scalding.examples.analytics.approx
 
-import com.twitter.scalding.typed.TDsl
-import com.twitter.scalding._
-import TDsl._
-import com.twitter.algebird.BloomFilter
+import com.twitter.scalding.{Args, Tool}
+import org.apache.hadoop
+import org.apache.hadoop.conf.Configuration
 
-case class BigFileElem(key: String, strValue: String, intValue: Int)
-case class SmallFileElem(key: String, strValue: String, intValue: Int, joinKey: String)
+object BloomFilterExample extends App {
 
-case class Incident(
-                      incidntNum: Long,
-                      category: String,
-                      descript: String,
-                      dayOfWeek: String,
-                      date: String,
-                      time: String,
-                      pdDistrict: String,
-                      resolution: String,
-                      address: String,
-                      locX: String,
-                      locY: String,
-                      location: String
-                      )
+  val historical = "./datasets/SFPD_Incidents_Previous_Three_Months_Inflated.csv"
+  val daily = "./datasets/SFPD_Incidents_Previous_Day.csv"
+  val output = "bloomFilterSPFDAnalysis.csv"
+  val noFilterOutput = "noBloomFilterSPFDAnalysis.csv"
 
-object Incident {
-  val fields = List('incidntNum, 'category, 'descript, 'dayOfWeek, 'date, 'time,
-    'pdDistrict, 'resolution, 'address, 'locX, 'locY, 'location)
+  println( s"Analysing daily incident file '$daily' matching with historical incidents at '$historical' with and without bloom filter " +
+    s"and writing output with bloom filter at '$output' and without at $noFilterOutput" )
+
+  val withFilter = withTimeCalc("Using Bloom Filter") {
+
+    val jobArgs =
+      classOf[ExtractSimilarHistoryForDailyIncidentsWithBloomFilter].getName :: "--hdfs" ::
+        "--historical" :: historical ::
+        "--daily" :: daily ::
+        "--output" :: output ::
+        args.toList
+
+    hadoop.util.ToolRunner.run(new Configuration, new Tool, jobArgs.toArray)
+  }
+
+  val withoutFilter =withTimeCalc("NOT Using Bloom Filter") {
+    val jobArgs =
+      classOf[ExtractSimilarHistoryForDailyIncidentsWithNoBloomFilter].getName :: "--hdfs" ::
+        "--historical" :: historical ::
+        "--daily" :: daily ::
+        "--output" :: noFilterOutput ::
+        args.toList
+
+    hadoop.util.ToolRunner.run(new Configuration, new Tool, jobArgs.toArray)
+  }
+
+  println( s"With bloom filter took $withFilter millis, without took $withoutFilter millis")
+
   
-  type IncidentTuple = (Long, String, String, String, String, String, String, String, String, String, String, String)
-  
-  def fromTuple(tuple: IncidentTuple) =
-    Incident(
-      tuple._1,
-      tuple._2,
-      tuple._3,
-      tuple._4,
-      tuple._5,
-      tuple._6,
-      tuple._7,
-      tuple._8,
-      tuple._9,
-      tuple._10,
-      tuple._11,
-      tuple._12
-    )
-}
+  def withTimeCalc(blockDescr: String)( block : => Unit): Long = {
+    val start = System.currentTimeMillis()
+    var end = 0l
 
-/**
- * Given the Incidents of a specific day (daily argument) and the historical one to join to (historical argument)
- * returns all daily incidents together with the historical one of the same category in the same police district
- * grouped by category and district
- */
-class BloomFilterExample(args: Args) extends Job(args) with FieldConversions {
-
-  val size = args.optional("estimatedSize") map { _.toInt } getOrElse 100000
-  val fpProb = args.optional("accuracy") map { _.toDouble } getOrElse 0.01d
-
-  val historicalIncidents = Csv(args("historical"), fields = Incident.fields, skipHeader = true)
-    .read
-    .toTypedPipe[Incident.IncidentTuple](Incident.fields)
-    .map { Incident.fromTuple }
-
-  val dailyIncidents = Csv(args("daily"), fields = Incident.fields, skipHeader = true)
-    .read
-    .toTypedPipe[Incident.IncidentTuple](Incident.fields)
-    .map { Incident.fromTuple }
-
-  implicit val bloomFilterMonoid = BloomFilter(size, fpProb)
-
-  val matchingDailyDataSetBloomFilter =
-    dailyIncidents
-      .map { incident =>
-        bloomFilterMonoid.create(incidentFilterKey(incident))
-      }
-      .sum
-
-
-  val historicalMatchingDailyApprox =
-    historicalIncidents
-      .filterWithValue(matchingDailyDataSetBloomFilter) { (incident, bloomFilterOp) =>
-        bloomFilterOp.map { filter => filter.contains( incidentFilterKey(incident) ).isTrue } getOrElse false
-      }
-
-  val historicalMatchingDaily =
-    historicalMatchingDailyApprox
-      .groupBy( incidentFilterKey )
-      .rightJoin( dailyIncidents.groupBy( incidentFilterKey ) )
-      .mapValues( _._1 )
-      .values
-      .filter( _.isDefined )
-      .map { _.get }
-
-  val joined = dailyIncidents ++ historicalMatchingDaily
-
-  joined
-    .groupBy( incidentFilterKey )
-    .values
-    .map {
-      incident => (incident.category, incident.pdDistrict, incident.incidntNum, incident.date, incident.time, incident.descript, incident.resolution)
+    try {
+      block
+    } finally {
+      end = System.currentTimeMillis()
     }
-    .toPipe('category, 'pdDistrict, 'incidntNum, 'date, 'time, 'descript, 'resolution)
-    .write( Csv(args("output")) )
 
-  
-  def incidentFilterKey(incident: Incident): String = s"${incident.category}|${incident.pdDistrict}"
+    end - start
+  }
 }

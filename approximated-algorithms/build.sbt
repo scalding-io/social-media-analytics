@@ -1,7 +1,9 @@
+import AssemblyKeys._ // put this at the top of the file
 
 name := "approximated-algorithms"
 
 Common.settings
+
 
 javacOptions in ThisBuild ++= Seq(
   "-source", "1.7",
@@ -18,4 +20,6 @@ resolvers ++= Common.resolvers
 
 libraryDependencies ++= Common.dependencies
 
-lazy val root = project.in( file(".") ).settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*)
+lazy val root = project.in( file(".") )
+			.settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*)
+			.settings(assemblySettings: _*)

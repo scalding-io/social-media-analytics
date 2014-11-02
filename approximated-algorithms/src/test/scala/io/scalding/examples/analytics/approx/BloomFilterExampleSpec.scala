@@ -11,9 +11,7 @@ class BloomFilterExampleSpec extends FlatSpec with Matchers with FieldConversion
   def fakeIncident(index: Int, category: String, district: String) =
     (s"$index", category, "desc", "dayOfWeek", "date", "time", district, "resolution", "addres", "x", "y", "(x, y)")
 
-  behavior of "BloomFilterExample"
-
-  it should "Filter Elements not in Big File with some error" in {
+  "ExtractSimilarHistoryForDailyIncidentsWithBloomFilter" should "Filter Elements not in Big File with some error" in {
 
     val size = 100
     val matchingHistorical = ((1 to size) map  { idx => fakeIncident(idx, s"category_${idx % 2}", s"district_${idx % 2}")  } )
@@ -29,7 +27,7 @@ class BloomFilterExampleSpec extends FlatSpec with Matchers with FieldConversion
       fakeIncident(90002, "category_2", "district_2")
     )
 
-    JobTest( classOf[BloomFilterExample].getName )
+    JobTest( classOf[ExtractSimilarHistoryForDailyIncidentsWithBloomFilter].getName )
       .arg("historical", "historical")
       .arg("daily", "daily")
       .arg("estimatedSize", size.toString)
@@ -39,6 +37,35 @@ class BloomFilterExampleSpec extends FlatSpec with Matchers with FieldConversion
       .sink(Csv("output")) {
         buffer: mutable.Buffer[(String, String, Long, String, String, String, String)] =>
             buffer.toList.map { _._3 } should not contain (atLeastOneOf(90003, 90004))
+      }
+      .run
+  }
+
+  "ExtractSimilarHistoryForDailyIncidentsWitNohBloomFilter" should "Filter Elements not in Big File with some error" in {
+
+    val size = 100
+    val matchingHistorical = ((1 to size) map  { idx => fakeIncident(idx, s"category_${idx % 2}", s"district_${idx % 2}")  } )
+    val nonMatchingHistorical = Seq(
+      fakeIncident(90003, "category_1", "no_district"),
+      fakeIncident(90004, "no_matching_category", "no_matching_district")
+    )
+
+    val historical =   matchingHistorical.toList ::: nonMatchingHistorical.toList
+
+    val daily = List(
+      fakeIncident(90001, "category_1", "district_1"),
+      fakeIncident(90002, "category_2", "district_2")
+    )
+
+    JobTest( classOf[ExtractSimilarHistoryForDailyIncidentsWithNoBloomFilter].getName )
+      .arg("historical", "historical")
+      .arg("daily", "daily")
+      .arg("output", "output")
+      .source(Csv("historical", fields = Incident.fields, skipHeader = true), historical)
+      .source(Csv("daily", fields = Incident.fields, skipHeader = true), daily)
+      .sink(Csv("output")) {
+        buffer: mutable.Buffer[(String, String, Long, String, String, String, String)] =>
+          buffer.toList.map { _._3 } should not contain (atLeastOneOf(90003, 90004))
       }
       .run
   }
