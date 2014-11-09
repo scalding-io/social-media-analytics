@@ -16,7 +16,7 @@ class HLLExampleForTwoHours(args: Args) extends Job(args) {
   val setSize = 100000
   val inaccuracy = 2D
 
-  // Implicit conversion of test to bytes
+  // Implicit conversion of text to bytes
   implicit def text2Bytes(text:String) = text.getBytes
 
   // Helper method to print cardinality estimations on screen
@@ -24,7 +24,7 @@ class HLLExampleForTwoHours(args: Args) extends Job(args) {
      pipe.mapTo( symbol -> symbol ) {
        hll: DenseHLL =>
          val estimation = hll.approximateSize.estimate
-         println(s"Cardinality estimation of (${name}) set : ${estimation} with 4% estimation error")
+         println(s"Cardinality estimation of (${name}) set : ${estimation} with ${inaccuracy} % estimation error")
          hll
      }
 
