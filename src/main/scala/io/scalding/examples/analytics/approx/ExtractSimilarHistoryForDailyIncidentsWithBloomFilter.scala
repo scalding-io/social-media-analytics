@@ -80,7 +80,7 @@ class ExtractSimilarHistoryForDailyIncidentsWithBloomFilter(args: Args) extends 
 
   joined
     .extractGroupedProjection()
-    .write( Csv(args("output")) )
+    .write( Csv(args("target/output")) )
 }
 
 /**
@@ -100,5 +100,5 @@ class ExtractSimilarHistoryForDailyIncidentsWithNoBloomFilter(args: Args) extend
 
   joined
     .extractGroupedProjection()
-    .write( Csv(args("output")) )
+    .write( Csv(args("target/output")) )
 }
