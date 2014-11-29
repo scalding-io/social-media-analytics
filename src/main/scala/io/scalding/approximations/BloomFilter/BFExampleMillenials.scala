@@ -1,11 +1,11 @@
-package io.scalding.examples.analytics.approx
+package io.scalding.approximations.BloomFilter
 
-import cascading.tuple.Fields
-import com.twitter.algebird.{BF, BloomFilterMonoid, BloomFilter}
 import com.twitter.scalding._
+import cascading.tuple.Fields
+import com.twitter.algebird.{BF, BloomFilter}
 
 /**
- * Created by Antwnis on 09/11/2014.
+ * @author Antonios Chalkiopoulos
  */
 class BFExampleMillenials(args:Args) extends Job(args) {
 
@@ -16,10 +16,6 @@ class BFExampleMillenials(args:Args) extends Job(args) {
   implicit val bloomFilterMonoid = BloomFilter(size, fpProb)              // Line 3
 
   def randomYear = 1991
-
-  val groupByList = "a,b,c"
-  val groupBySymbols = groupByList.split(",").map ( x => Symbol(x) ).toList // This is a List[Symbol]
-  val groupByFields : Fields = new Fields( "a","b","c") //groupByList.split(","):_* )
 
   // 1st hour - the page got 100 K unique visitors
   val hour1List = (1 to size).toList
@@ -47,6 +43,5 @@ class BFExampleMillenials(args:Args) extends Job(args) {
 //    .filter { user => (user.yearBorn > 1980 & user.yearBorn < 2000) }  // Line 4
 //    .map { user => bloomFilterMonoid.create(user.id)) }                // Line 5
 //    .sum
-
 
 }

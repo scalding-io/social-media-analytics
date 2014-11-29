@@ -1,7 +1,7 @@
-package io.scalding.examples.analytics.approx
+package io.scalding.approximations.BloomFilter
 
-import com.twitter.scalding.{FieldConversions, Csv, TypedCsv, JobTest}
-import org.scalatest.{Matchers, FlatSpec}
+import com.twitter.scalding.{Csv, FieldConversions, JobTest}
+import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable
 

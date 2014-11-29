@@ -82,8 +82,8 @@ task spec(dependsOn: ['testClasses'], type: JavaExec) {
 }
 
 task fatJarTask(type: OneJar) {
-    mainClass = 'com.fannan.etl.typeII.examples.SnapshotDeltaRunner'
-    archiveName = 'ETLTypeII.jar'
+    mainClass = 'io.scalding.approximations.ExamplesRunner'
+    archiveName = 'scalding-approximations.jar'
 }
 
-mainClassName = "io.scalding.examples.analytics.approx.CMS.CMSketchRunner"
+mainClassName = "io.scalding.approximations.ExamplesRunner"

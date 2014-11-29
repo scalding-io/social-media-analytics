@@ -1,7 +1,7 @@
-package io.scalding.examples.analytics.approx
+package io.scalding.approximations.HyperLogLog
 
 import cascading.pipe.Pipe
-import com.twitter.algebird.{HLL, DenseHLL}
+import com.twitter.algebird.{DenseHLL, HLL}
 import com.twitter.scalding._
 
 /**
@@ -44,10 +44,10 @@ class HLLExampleForTwoHours(args: Args) extends Job(args) {
     }
 
   printSizeOfHLL(hour1, 'denseHHL, "1st hour")
-    .write(TextLine("HLLof1stHour"))
+    .write(TextLine("target/HLLof1stHour"))
 
   printSizeOfHLL(hour2, 'denseHHL, "2nd hour")
-    .write(TextLine("HLLof2ndHour"))
+    .write(TextLine("target/HLLof2ndHour"))
 
   val unionTwoHours = (hour1 ++ hour2)
     .groupAll { group =>
@@ -57,6 +57,6 @@ class HLLExampleForTwoHours(args: Args) extends Job(args) {
     }
 
   printSizeOfHLL(unionTwoHours, 'denseHHL, "1st and 2nd hour")
-    .write(TextLine("HLLof1stand2ndHour"))
+    .write(TextLine("target/HLLof1stand2ndHour"))
 
 }

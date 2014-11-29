@@ -1,6 +1,6 @@
-package io.scalding.examples.analytics.approx
+package io.scalding.approximations.BloomFilter
 
-import com.twitter.scalding.{Args, Tool}
+import com.twitter.scalding.Tool
 import org.apache.hadoop
 import org.apache.hadoop.conf.Configuration
 
