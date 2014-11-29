@@ -1,0 +1,1 @@
+Open data set from the San Francisco Police Department. Parking meters data available from: https://data.sfgov.org/Transportation/Parking-meters/7egw-qt89/
