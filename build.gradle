@@ -1,0 +1,89 @@
+apply plugin: 'application'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'scala'
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {
+        url 'http://conjars.org/repo'
+    }
+    maven {
+        url 'http://clojars.org/repo'
+    }
+    maven {
+        url 'http://maven.twttr.com'
+    }
+    maven {
+        url 'http://repository.cloudera.com/content/repositories/releases/'
+    }
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.github.rholder:gradle-one-jar:1.0.4'
+    }
+}
+
+apply plugin: 'gradle-one-jar'
+
+applicationName = "SocialMediaAnalytics"
+
+ext {
+    hadoopVersion = "2.5.0-cdh5.2.0"
+    hadoopCoreVersion = "2.5.0-mr1-cdh5.2.0"
+    scaldingVersion = "0.11.2"
+    sl4jVersion = "1.7.5"
+}
+
+
+dependencies {
+    compile 'org.scala-lang:scala-library:2.10.4'
+
+    compile group: 'com.twitter' , name: 'scalding-core_2.10',    version: scaldingVersion
+    compile group: 'com.twitter' , name: 'scalding-commons_2.10', version: scaldingVersion
+
+    compile group: 'org.apache.hadoop' , name: 'hadoop-common',   version: hadoopVersion
+    compile group: 'org.apache.hadoop' , name: 'hadoop-core',     version: hadoopCoreVersion
+
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
+    compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.7'
+
+    compile 'commons-collections:commons-collections:3.2'
+
+    testCompile 'junit:junit:4.11'
+    testCompile 'org.specs2:specs2_2.10:2.2'
+    testCompile 'org.scalatest:scalatest_2.10:2.2.0'
+    testRuntime 'org.pegdown:pegdown:1.1.0'
+
+}
+
+// http://forums.gradle.org/gradle/topics/ant_scalac_using_target_jvm_1_5
+tasks.withType(ScalaCompile) {
+    scalaCompileOptions.additionalParameters = ['-target:jvm-1.7']
+    scalaCompileOptions.useAnt = false
+}
+
+tasks.withType(ScalaCompile) {
+    configure(scalaCompileOptions.forkOptions) {
+        memoryMaximumSize = '1g'
+        jvmArgs = ['-XX:MaxPermSize=512m']
+    }
+}
+
+task spec(dependsOn: ['testClasses'], type: JavaExec) {
+    main = 'org.scalatest.tools.Runner'
+    args = ['-R', 'build/classes/test', '-o']
+    classpath = sourceSets.test.runtimeClasspath
+}
+
+task fatJarTask(type: OneJar) {
+    mainClass = 'com.fannan.etl.typeII.examples.SnapshotDeltaRunner'
+    archiveName = 'ETLTypeII.jar'
+}
+
+mainClassName = "io.scalding.examples.analytics.approx.CMS.CMSketchRunner"

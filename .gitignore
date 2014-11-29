@@ -1,11 +1,14 @@
 *.class
 *.log
+*.iml
 
 # sbt specific
 .cache/
 .history/
 .lib/
+.gradle/
 dist/*
+build/*
 target/
 lib_managed/
 src_managed/
