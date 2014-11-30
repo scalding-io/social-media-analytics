@@ -2,14 +2,14 @@ This file has all the questions and answers from http://scifi.stackexchange.com/
 
 The original data field documentation is at http://meta.stackexchange.com/questions/2677/database-schema-documentation-for-the-public-data-dump-and-sede
 
-Only rows from the original XML data file whose PostTypeId is 1 or 2 is kept.
+Only rows from the original XML data file whose PostTypeID is 1 or 2 is kept.
 
 There are 9 tab separated fields:
 
-* Id
-* PostTypeId
-* ParentId
-* OwnerUserId
+* ID
+* PostTypeID
+* ParentID
+* OwnerUserID
 * CreationDate
 * ViewCount
 * FavoriteCount
