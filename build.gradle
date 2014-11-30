@@ -87,3 +87,6 @@ task fatJarTask(type: OneJar) {
 }
 
 mainClassName = "io.scalding.approximations.ExamplesRunner"
+
+// $ gradle run # To run all examples
+// $ gradle dependencies # To view dependency tree

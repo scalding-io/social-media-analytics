@@ -63,6 +63,7 @@ object incidentUtils extends FieldConversions {
 class ExtractSimilarHistoryForDailyIncidentsWithBloomFilter(args: Args) extends Job(args) with FieldConversions {
   import incidentUtils._
 
+  val output = args("output")
   val size = args.optional("estimatedSize") map { _.toInt } getOrElse 100000
   val fpProb = args.optional("accuracy") map { _.toDouble } getOrElse 0.01d
 
@@ -77,7 +78,7 @@ class ExtractSimilarHistoryForDailyIncidentsWithBloomFilter(args: Args) extends 
 
   joined
     .extractGroupedProjection()
-    .write( Csv(args("target/output")) )
+    .write( Csv(output) ) // results/similar-history-wit-BF"
 }
 
 /**
@@ -87,6 +88,7 @@ class ExtractSimilarHistoryForDailyIncidentsWithBloomFilter(args: Args) extends 
 class ExtractSimilarHistoryForDailyIncidentsWithNoBloomFilter(args: Args) extends Job(args) with FieldConversions {
   import incidentUtils._
 
+  val output = args("output")
   val historicalIncidents = readIncidentFromCsv(args("historical"))
   val dailyIncidents = readIncidentFromCsv(args("daily"))
 
@@ -96,7 +98,7 @@ class ExtractSimilarHistoryForDailyIncidentsWithNoBloomFilter(args: Args) extend
 
   joined
     .extractGroupedProjection()
-    .write( Csv(args("target/output")) )
+    .write( Csv(output) ) // results/similar-history-without-BF
 }
 
 
