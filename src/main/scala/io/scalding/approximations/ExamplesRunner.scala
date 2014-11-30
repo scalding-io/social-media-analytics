@@ -25,6 +25,13 @@ object ExamplesRunner extends App {
   }
   println(s"Running HLL took ${timerHLL} msec")
 
+  val stackExchangePosts = "datasets/stackexchange/posts.tsv"
+  val stackexchangeHLL = withTimeCalc("Running HLL cardinality count on stackexchange data-set") {
+    ToolRunner.run(new Configuration, new Tool, (classOf[HLLstackexchange].getName ::
+      List("--local","--input",stackExchangePosts,"--output","results/HLL-stackexchange")).toArray)
+  }
+  println(s"Running HLL took ${timerHLL} msec")
+
 
 
   // Bloom Filter Examples
