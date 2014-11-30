@@ -17,3 +17,14 @@ You know we are talking about:
 We will be using as sample data, both from wikipedia, stackexchange and of course we will demonstrate how to produce computer generate data with scalding, to have the perfect skeweness and type of data.
 
 Overall i hope that together with the book, this code repository can bring some more light into the usefullness of HLL, BF, CM sketches in modern analytics either in batch mode (MapReduce) or in a different execution fabric.
+
+Quickstart
+==========
+  
+    $ git clone https://github.com/scalding-io/social-media-analytics.git
+    $ cd social-media-analytics/
+    $ gradle run
+
+and to run the scalding tests
+
+    $ gradle spec
