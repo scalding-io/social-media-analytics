@@ -6,59 +6,12 @@ import com.twitter.algebird.BloomFilter
 import com.twitter.scalding._
 import com.twitter.scalding.typed.TDsl._
 
-object incidentUtils extends FieldConversions {
-  def incidentFilterKey(incident: Incident): String = s"${incident.category}|${incident.pdDistrict}"
-
-  def readIncidentFromCsv(fileName: String, skipHeader: Boolean = true)(implicit flowDef: FlowDef, mode: Mode): TypedPipe[Incident] =
-    Csv(fileName, fields = Incident.fields, skipHeader = skipHeader)
-    .read
-    .toTypedPipe[Incident.IncidentTuple](Incident.fields)
-    .map { Incident.fromTuple }
-  
-  implicit class IncidentOps(val self: TypedPipe[Incident]) extends AnyVal {
-    def entriesMatchingWith(matchWith: TypedPipe[Incident], matchingKeyExtractor: Incident => String = incidentFilterKey) : TypedPipe[Incident] = {
-      self
-        .groupBy( matchingKeyExtractor )
-        .rightJoin( matchWith.groupBy( matchingKeyExtractor ) )
-        .mapValues( _._1 )
-        .values
-        .filter( _.isDefined )
-        .map { _.get }
-    }
-    
-    def extractGroupedProjection(groupBy: Incident => String = incidentFilterKey): Pipe = {
-      self
-        .groupBy( groupBy )
-        .values
-        .map { incident => (incident.category, incident.pdDistrict, incident.incidntNum, incident.date, incident.time, incident.descript, incident.resolution) }
-        .toPipe( 'category, 'pdDistrict, 'incidntNum, 'date, 'time, 'descript, 'resolution )
-    } 
-    
-    def approximatedMatchingWith(matchWith: TypedPipe[Incident], estimatedSize: Int, accuracy: Double, matchingKeyExtractor: Incident => String = incidentFilterKey) = {
-      implicit val bloomFilterMonoid = BloomFilter(estimatedSize, accuracy)
-
-      val matchingDailyDataSetBloomFilter =
-        matchWith
-          .map { incident =>
-            bloomFilterMonoid.create(incidentFilterKey(incident))
-          }
-          .sum
-      
-      self
-        .filterWithValue(matchingDailyDataSetBloomFilter) { (incident, bloomFilterOp) =>
-          bloomFilterOp.map { filter => filter.contains( incidentFilterKey(incident) ).isTrue } getOrElse false
-        }
-
-    }
-    
-  }
-}
-
-
 /**
  * Given the Incidents of a specific day (daily argument) and the historical one to join to (historical argument)
  * returns all daily incidents together with the historical one of the same category in the same police district
  * grouped by category and district
+ *
+ * @author Stefano Galarragas - http://scalding.io
  */
 class ExtractSimilarHistoryForDailyIncidentsWithBloomFilter(args: Args) extends Job(args) with FieldConversions {
   import incidentUtils._
@@ -70,8 +23,8 @@ class ExtractSimilarHistoryForDailyIncidentsWithBloomFilter(args: Args) extends 
   val historicalIncidents = readIncidentFromCsv(args("historical"))
   val dailyIncidents = readIncidentFromCsv(args("daily"))
 
-  val filteredHistorical = historicalIncidents approximatedMatchingWith (dailyIncidents, size, fpProb) 
-    
+  val filteredHistorical = historicalIncidents approximatedMatchingWith (dailyIncidents, size, fpProb)
+
   val historicalMatchingDaily = filteredHistorical entriesMatchingWith dailyIncidents
 
   val joined = dailyIncidents ++ historicalMatchingDaily
@@ -100,6 +53,56 @@ class ExtractSimilarHistoryForDailyIncidentsWithNoBloomFilter(args: Args) extend
     .extractGroupedProjection()
     .write( Csv(output) ) // results/similar-history-without-BF
 }
+
+object incidentUtils extends FieldConversions {
+  def incidentFilterKey(incident: Incident): String = s"${incident.category}|${incident.pdDistrict}"
+
+  def readIncidentFromCsv(fileName: String, skipHeader: Boolean = true)(implicit flowDef: FlowDef, mode: Mode): TypedPipe[Incident] =
+  Csv(fileName, fields = Incident.fields, skipHeader = skipHeader)
+  .read
+  .toTypedPipe[Incident.IncidentTuple](Incident.fields)
+  .map { Incident.fromTuple }
+
+  implicit class IncidentOps(val self: TypedPipe[Incident]) extends AnyVal {
+    def entriesMatchingWith(matchWith: TypedPipe[Incident], matchingKeyExtractor: Incident => String = incidentFilterKey) : TypedPipe[Incident] = {
+      self
+      .groupBy( matchingKeyExtractor )
+      .rightJoin( matchWith.groupBy( matchingKeyExtractor ) )
+      .mapValues( _._1 )
+      .values
+      .filter( _.isDefined )
+      .map { _.get }
+    }
+
+    def extractGroupedProjection(groupBy: Incident => String = incidentFilterKey): Pipe = {
+      self
+      .groupBy( groupBy )
+      .values
+      .map { incident => (incident.category, incident.pdDistrict, incident.incidntNum, incident.date, incident.time, incident.descript, incident.resolution) }
+      .toPipe( 'category, 'pdDistrict, 'incidntNum, 'date, 'time, 'descript, 'resolution )
+    }
+
+    def approximatedMatchingWith(matchWith: TypedPipe[Incident], estimatedSize: Int, accuracy: Double, matchingKeyExtractor: Incident => String = incidentFilterKey) = {
+      implicit val bloomFilterMonoid = BloomFilter(estimatedSize, accuracy)
+
+      val matchingDailyDataSetBloomFilter =
+      matchWith
+      .map { incident =>
+          bloomFilterMonoid.create(incidentFilterKey(incident))
+        }
+      .sum
+
+      self
+      .filterWithValue(matchingDailyDataSetBloomFilter) { (incident, bloomFilterOp) =>
+        bloomFilterOp.map { filter => filter.contains( incidentFilterKey(incident) ).isTrue } getOrElse false
+      }
+
+    }
+
+  }
+}
+
+
 
 
 
