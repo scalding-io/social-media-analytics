@@ -32,6 +32,13 @@ object ExamplesRunner extends App {
   }
   println(s"Running HLL took ${timerHLL} msec")
 
+  val wikipediaRevisions = "datasets/wikipedia/wikipedia-revisions-sample.tsv"
+  val wikipediaHLL = withTimeCalc("Running HLL cardinality count on wikipedia data-set") {
+    ToolRunner.run(new Configuration, new Tool, (classOf[HLLwikipedia].getName ::
+      List("--local","--input",wikipediaRevisions,"--output","results/HLL-wikipedia")).toArray)
+  }
+  println(s"Running HLL took ${timerHLL} msec")
+
 
 
   // Bloom Filter Examples

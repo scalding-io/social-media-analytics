@@ -27,7 +27,7 @@ class HLLstackexchange(args: Args) extends Job(args) {
       pipe.mapTo( symbol -> symbol ) {
         hll: DenseHLL =>
           val estimation = hll.approximateSize.estimate
-          println(s"Cardinality estimation of (${name}) set : ${estimation} with ${inaccuracy} % estimation error")
+          println(s"${name} cardinality estimation: ${estimation} with ${inaccuracy} % error")
           hll
       }
 

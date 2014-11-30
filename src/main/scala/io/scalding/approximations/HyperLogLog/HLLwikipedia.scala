@@ -5,13 +5,13 @@ import com.twitter.algebird.DenseHLL
 import com.twitter.scalding._
 
 /**
- * Counting the number of unique users in the stack exchange data-set
+ * Counting the number of unique contributors in the wikipedia data-set
  * @author Antonios.Chalkiopoulos - http://scalding.io
  */
 class HLLwikipedia(args: Args) extends Job(args) {
 
   // The input schema of our data-set
-  val schema = List('ID, 'PostTypeID, 'ParentID, 'OwnerUserID, 'CreationDate, 'ViewCount, 'FavoriteCount, 'Tags, 'Keywords)
+  val schema = List('ContributorID, 'ContributorUserName, 'RevisionID, 'DateTime)
 
   // Take in as arguments the location of the input/output files
   val inputFiles = args("input")
@@ -31,13 +31,14 @@ class HLLwikipedia(args: Args) extends Job(args) {
           hll
       }
 
-  val stackExchangePosts = Tsv(inputFiles,schema).read
-    .project('OwnerUserID)
+  val wikipediaPosts = Tsv(inputFiles,schema).read
+    .project('ContributorID)
+    
     .groupAll { group =>
-       group.hyperLogLog[Long](('OwnerUserID ->'denseHHL) , inaccuracy)
+       group.hyperLogLog[Long](('ContributorID ->'denseHHL) , inaccuracy)
     }
 
-   printSizeOfHLL(stackExchangePosts, 'denseHHL, "stackexchange")
+   printSizeOfHLL(wikipediaPosts, 'denseHHL, "wikipedia")
      .write(TextLine(outputFile))
 
  }
