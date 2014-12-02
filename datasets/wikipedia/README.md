@@ -7,9 +7,10 @@ Wikipedia indicates these belong to "bookkeeping" scripts.
 
 The fields are the following:
 
-wikipedia-revisions.gz
-======================
-ContributorID
-ContributorUserName
-RevisionID
-DateTime
+wikipedia-revisions schema
+==========================
+
+    'ContributorID
+    'ContributorUserName
+    'RevisionID
+    'DateTime
