@@ -8,7 +8,7 @@ import com.twitter.scalding._
  * Example of adding 2 HLL of ~ 100.000 elements each
  * resulting into a ~ 120.000 estimation as 80.000 elements exist in both sets
  *
- * @since 08/11/2014 by Antwnis _at_ gmail
+ * @author Antonios.Chalkiopoulos - http://scalding.io
  */
 class HLLExampleForTwoHours(args: Args) extends Job(args) {
 
@@ -44,10 +44,10 @@ class HLLExampleForTwoHours(args: Args) extends Job(args) {
     }
 
   printSizeOfHLL(hour1, 'denseHHL, "1st hour")
-    .write(TextLine("target/HLLof1stHour"))
+    .write(TextLine("results/HLL-1stHour"))
 
   printSizeOfHLL(hour2, 'denseHHL, "2nd hour")
-    .write(TextLine("target/HLLof2ndHour"))
+    .write(TextLine("results/HLL-2ndHour"))
 
   val unionTwoHours = (hour1 ++ hour2)
     .groupAll { group =>
@@ -57,6 +57,6 @@ class HLLExampleForTwoHours(args: Args) extends Job(args) {
     }
 
   printSizeOfHLL(unionTwoHours, 'denseHHL, "1st and 2nd hour")
-    .write(TextLine("target/HLLof1stand2ndHour"))
+    .write(TextLine("results/HLL-BothHours"))
 
 }
