@@ -66,7 +66,7 @@ object ExamplesRunner extends App {
 //    s"and writing output with bloom filter at '$similarHistoryWithBF' and without at $similarHistoryWithoutBF" )
 
   val timerBFmillennialls = withTimeCalc("Running simple BF creation and queries") {
-    ToolRunner.run(new Configuration, new Tool, (classOf[BFMillennialsExample].getName :: "--local" ::
+    ToolRunner.run(new Configuration, new Tool, (classOf[BFMillennialsExampleFields].getName :: "--local" ::
       "--userdata"  :: "datasets/millennials/userdata.tsv" :: args.toList).toArray)
   }
 
@@ -80,15 +80,21 @@ object ExamplesRunner extends App {
 
 
   // Count-Min Sketch Examples
-//  val timerCMS = withTimeCalc("Running Count-Min Sketch example") {
-//    ToolRunner.run(new Configuration, new Tool, (classOf[CMSketch].getName ::
-//      (List("--local",
-//        "--input", "datasets/stackexchange/posts.tsv",
-//        "--output", "results/bloomFilter"))).toArray)
-//  }
-//  println( s"Count-Min Sketch example took ${timerCMS} msec")
+  val timerCMS = withTimeCalc("Running Count-Min Sketch on stackexchange dataset") {
+    ToolRunner.run(new Configuration, new Tool, (classOf[CMSstackexchangeFields].getName :: "--local" ::
+        "--input" :: "datasets/stackexchange/posts.tsv" ::
+        "--output":: "results/CMS-stackexchangeFields.tsv" ::
+        "--serialized" :: "results/BF-SimpleExample-serialized.tsv" :: args.toList).toArray)
+  }
+  println( s"Count-Min Sketch example on `stackexchange` took ${timerCMS} msec")
 
-
+  val timerCMSstackexchangeTyped = withTimeCalc("Running Count-Min Sketch on stackexchange dataset") {
+    ToolRunner.run(new Configuration, new Tool, (classOf[CMSstackexchangeTyped].getName :: "--local" ::
+      "--input" :: "datasets/stackexchange/posts.tsv" ::
+      "--output":: "results/CMS-stackexchangeTyped.tsv" ::
+      "--serialized" :: "esults/CMD-stackexchangeTyped-serialized.tsv" :: args.toList).toArray)
+  }
+  println( s"Count-Min Sketch example on `stackexchange` took ${timerCMS} msec")
 
   /**
    * A `helper` method. Using this method we can `wrap` a block of code and count the time

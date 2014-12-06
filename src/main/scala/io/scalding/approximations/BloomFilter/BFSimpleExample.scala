@@ -35,4 +35,11 @@ class BFSimpleExample(args:Args) extends Job(args) {
     }
     .write( TypedCsv(args("output")) )
 
+  // Serialize the BF
+//  import
+  usersBF
+    .map { bf:BF => io.scalding.approximations.Utils.serialize(bf) }
+    .write( TypedCsv(args("serialized")) )
+
+
 }
