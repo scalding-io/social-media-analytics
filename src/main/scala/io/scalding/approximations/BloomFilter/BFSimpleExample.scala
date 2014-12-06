@@ -19,18 +19,20 @@ class BFSimpleExample(args:Args) extends Job(args) {
 
   implicit val bloomFilterMonoid = BloomFilter(size, fpProb)
 
-  // Generate 100K ids for the shake of the experiment
+  // Generate and add 100K ids into the (Bloom) filter
   val usersList = (1 to size).toList.map{ x => User(x.toString) }
-  val usersPipe = IterableSource[User](usersList)
-     .map { user => bloomFilterMonoid.create(user.userID) }
-     .sum
-     // Now add some code, just to illustrate the example
-     .map { bf:BF =>
-        println("BF contains 'ABCD' ? " + (if (bf.contains("ABCD").isTrue) "maybe" else "no"))
-        println("BF contains 'EFGH' ? " + (if (bf.contains("EFGH").isTrue) "maybe" else "no"))
-        println("BF contains '123'  ? " + (if (bf.contains("123") .isTrue) "maybe" else "no"))
-        bf
-      }
-     .write( TypedCsv(args("output")) )
+  val usersBF = IterableSource[User](usersList)
+    .map { user => bloomFilterMonoid.create(user.userID) }
+    .sum
+
+  // Display that BF can be queried
+  usersBF
+    .map { bf:BF =>
+       println("BF contains 'ABCD' ? " + (if (bf.contains("ABCD").isTrue) "maybe" else "no"))
+       println("BF contains 'EFGH' ? " + (if (bf.contains("EFGH").isTrue) "maybe" else "no"))
+       println("BF contains '123'  ? " + (if (bf.contains("123") .isTrue) "maybe" else "no"))
+       bf
+    }
+    .write( TypedCsv(args("output")) )
 
 }
