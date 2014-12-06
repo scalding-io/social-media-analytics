@@ -18,6 +18,9 @@ repositories {
     maven {
         url 'http://repository.cloudera.com/content/repositories/releases/'
     }
+    maven {
+        url 'http://dl.bintray.com/scalaz/releases'
+    }
 }
 
 buildscript {
