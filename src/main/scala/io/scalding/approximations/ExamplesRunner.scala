@@ -42,32 +42,35 @@ object ExamplesRunner extends App {
 
 
 //  // Bloom Filter Examples
-//  val daily = "datasets/SanFranciscoPoliceDepartment/SFPD_Incidents_Previous_Day.csv"
-//  val historical = "datasets/SanFranciscoPoliceDepartment/SFPD_Incidents_Previous_Three_Months.csv"
-//  val similarHistoryWithBF = "results/similar-history-with-BF"
-//  val similarHistoryWithoutBF = "results/similar-history-without-BF"
-//
-//  val timerBF = withTimeCalc("Running Similar history => With BF") {
-//    val BFjobArgs = classOf[ExtractSimilarHistoryForDailyIncidentsWithBloomFilter].getName ::
-//      "--local" :: "--output" :: similarHistoryWithBF :: "--historical" ::
-//      historical :: "--daily" :: daily :: args.toList
-//    ToolRunner.run(new Configuration, new Tool, BFjobArgs.toArray)
-//  }
-//  println(s"Running using BF took ${timerBF} msec")
-//  val timerWithoutBF = withTimeCalc("Running Similar history => Without BF") {
-//    val withoutBFjobArgs =  classOf[ExtractSimilarHistoryForDailyIncidentsWithNoBloomFilter].getName ::
-//      "--local" :: "--output" :: similarHistoryWithoutBF :: "--historical" :: historical ::
-//      "--daily" :: daily :: args.toList
-//    ToolRunner.run(new Configuration, new Tool, withoutBFjobArgs.toArray)
-//  }
-//  println(s"Running without BF took ${timerWithoutBF} msec")
-//
-//  println( s"Analysing daily incident file '$daily' matching with historical incidents at '$historical' with and without bloom filter " +
-//    s"and writing output with bloom filter at '$similarHistoryWithBF' and without at $similarHistoryWithoutBF" )
+  val daily = "datasets/SanFranciscoPoliceDepartment/SFPD_Incidents_Previous_Day.csv"
+  val historical = "datasets/SanFranciscoPoliceDepartment/SFPD_Incidents_Previous_Three_Months.csv"
+  val similarHistoryWithBF = "results/similar-history-with-BF"
+  val similarHistoryWithoutBF = "results/similar-history-without-BF"
+
+  val timerBF = withTimeCalc("Running Similar history => With BF") {
+    val BFjobArgs = classOf[ExtractSimilarHistoryForDailyIncidentsWithBloomFilter].getName ::
+      "--local" :: "--output" :: similarHistoryWithBF :: "--historical" ::
+      historical :: "--daily" :: daily :: args.toList
+    ToolRunner.run(new Configuration, new Tool, BFjobArgs.toArray)
+  }
+  println(s"Running using BF took ${timerBF} msec")
+  val timerWithoutBF = withTimeCalc("Running Similar history => Without BF") {
+    val withoutBFjobArgs =  classOf[ExtractSimilarHistoryForDailyIncidentsWithNoBloomFilter].getName ::
+      "--local" :: "--output" :: similarHistoryWithoutBF :: "--historical" :: historical ::
+      "--daily" :: daily :: args.toList
+    ToolRunner.run(new Configuration, new Tool, withoutBFjobArgs.toArray)
+  }
+  println(s"Running without BF took ${timerWithoutBF} msec")
+
+  println( s"Analysing daily incident file '$daily' matching with historical incidents at '$historical' with and without bloom filter " +
+    s"and writing output with bloom filter at '$similarHistoryWithBF' and without at $similarHistoryWithoutBF" )
 
   val timerBFmillennialls = withTimeCalc("Running simple BF creation and queries") {
     ToolRunner.run(new Configuration, new Tool, (classOf[BFMillennialsExampleFields].getName :: "--local" ::
-      "--userdata" :: "datasets/millennials/userdata.tsv" :: args.toList).toArray)
+      "--input" :: "datasets/millennials/userdata.tsv" ::
+      "--output":: "results/BF-MillennialsFields.tsv" ::
+      "--serialized":: "results/BF-MillennialsFields-serialized.tsv" ::
+      args.toList).toArray)
   }
 
   val timerBFsimple = withTimeCalc("Running simple BF creation and queries") {
@@ -92,7 +95,7 @@ object ExamplesRunner extends App {
     ToolRunner.run(new Configuration, new Tool, (classOf[CMSstackexchangeTyped].getName :: "--local" ::
       "--input" :: "datasets/stackexchange/posts.tsv" ::
       "--output":: "results/CMS-stackexchangeTyped.tsv" ::
-      "--serialized" :: "esults/CMD-stackexchangeTyped-serialized.tsv" :: args.toList).toArray)
+      "--serialized" :: "results/CMS-stackexchangeTyped-serialized.tsv" :: args.toList).toArray)
   }
   println( s"Count-Min Sketch example on `stackexchange` took ${timerCMS} msec")
 

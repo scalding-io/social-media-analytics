@@ -14,7 +14,7 @@ class BFMillennialsExampleFields(args:Args) extends Job(args) with FieldConversi
   // Our Bloom Filter mondoid
   implicit val bfMonoid = BloomFilter(size, fpProb)                             // Line 3
 
-  val bloomFilterPipe = Tsv(args("userdata"), List('user, 'yearBorn)).read      // Line 4
+  val millennialsPipe = Tsv(args("input"), List('user, 'yearBorn)).read      // Line 4
     .filter('yearBorn) { yearBorn:Int => (yearBorn > 1980 & yearBorn < 2000) }  // Line 5
     .project('user)                                                             // Line 6
     .groupAll { group => group.toList[(String)]('user -> 'allUsers)}            // Line 7
@@ -25,6 +25,13 @@ class BFMillennialsExampleFields(args:Args) extends Job(args) with FieldConversi
       println( "195000 " + x.contains("195000").isTrue)
       ""
     }
-    .write(Tsv("results/BF-MillennialsExampleFields.tsv"))
+
+  // Serialize the BF
+  millennialsPipe
+    .mapTo('bloom -> 'serializes) { bf:BF => io.scalding.approximations.Utils.serialize(bf) }
+    .write( Tsv(args("serialized")) )
+
+   millennialsPipe
+    .write(Tsv(args("output")))
 
 }
