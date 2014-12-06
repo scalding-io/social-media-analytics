@@ -41,40 +41,52 @@ object ExamplesRunner extends App {
 
 
 
-  // Bloom Filter Examples
-  val daily = "datasets/SanFranciscoPoliceDepartment/SFPD_Incidents_Previous_Day.csv"
-  val historical = "datasets/SanFranciscoPoliceDepartment/SFPD_Incidents_Previous_Three_Months.csv"
-  val similarHistoryWithBF = "results/similar-history-with-BF"
-  val similarHistoryWithoutBF = "results/similar-history-without-BF"
+//  // Bloom Filter Examples
+//  val daily = "datasets/SanFranciscoPoliceDepartment/SFPD_Incidents_Previous_Day.csv"
+//  val historical = "datasets/SanFranciscoPoliceDepartment/SFPD_Incidents_Previous_Three_Months.csv"
+//  val similarHistoryWithBF = "results/similar-history-with-BF"
+//  val similarHistoryWithoutBF = "results/similar-history-without-BF"
+//
+//  val timerBF = withTimeCalc("Running Similar history => With BF") {
+//    val BFjobArgs = classOf[ExtractSimilarHistoryForDailyIncidentsWithBloomFilter].getName ::
+//      "--local" :: "--output" :: similarHistoryWithBF :: "--historical" ::
+//      historical :: "--daily" :: daily :: args.toList
+//    ToolRunner.run(new Configuration, new Tool, BFjobArgs.toArray)
+//  }
+//  println(s"Running using BF took ${timerBF} msec")
+//  val timerWithoutBF = withTimeCalc("Running Similar history => Without BF") {
+//    val withoutBFjobArgs =  classOf[ExtractSimilarHistoryForDailyIncidentsWithNoBloomFilter].getName ::
+//      "--local" :: "--output" :: similarHistoryWithoutBF :: "--historical" :: historical ::
+//      "--daily" :: daily :: args.toList
+//    ToolRunner.run(new Configuration, new Tool, withoutBFjobArgs.toArray)
+//  }
+//  println(s"Running without BF took ${timerWithoutBF} msec")
+//
+//  println( s"Analysing daily incident file '$daily' matching with historical incidents at '$historical' with and without bloom filter " +
+//    s"and writing output with bloom filter at '$similarHistoryWithBF' and without at $similarHistoryWithoutBF" )
 
-  val timerBF = withTimeCalc("Running Similar history => With BF") {
-    val BFjobArgs = classOf[ExtractSimilarHistoryForDailyIncidentsWithBloomFilter].getName ::
-      "--local" :: "--output" :: similarHistoryWithBF :: "--historical" ::
-      historical :: "--daily" :: daily :: args.toList
-    ToolRunner.run(new Configuration, new Tool, BFjobArgs.toArray)
+  val timerBFmillennialls = withTimeCalc("Running simple BF creation and queries") {
+    ToolRunner.run(new Configuration, new Tool, (classOf[BFMillennialsExample].getName :: "--local" ::
+      "--userdata"  :: "datasets/millennials/userdata.tsv" :: args.toList).toArray)
   }
-  println(s"Running using BF took ${timerBF} msec")
-  val timerWithoutBF = withTimeCalc("Running Similar history => Without BF") {
-    val withoutBFjobArgs =  classOf[ExtractSimilarHistoryForDailyIncidentsWithNoBloomFilter].getName ::
-      "--local" :: "--output" :: similarHistoryWithoutBF :: "--historical" :: historical ::
-      "--daily" :: daily :: args.toList
-    ToolRunner.run(new Configuration, new Tool, withoutBFjobArgs.toArray)
-  }
-  println(s"Running without BF took ${timerWithoutBF} msec")
 
-  println( s"Analysing daily incident file '$daily' matching with historical incidents at '$historical' with and without bloom filter " +
-    s"and writing output with bloom filter at '$similarHistoryWithBF' and without at $similarHistoryWithoutBF" )
+  val timerBFsimple = withTimeCalc("Running simple BF creation and queries") {
+    ToolRunner.run(new Configuration, new Tool, (classOf[BFSimpleExample].getName :: "--local" ::
+      "--output" ::  "results/BF-SimpleExample.tsv" :: args.toList).toArray)
+  }
+
+
 
 
 
   // Count-Min Sketch Examples
-  val timerCMS = withTimeCalc("Running Count-Min Sketch example") {
-    ToolRunner.run(new Configuration, new Tool, (classOf[CMSketch].getName ::
-      (List("--local",
-        "--input", "datasets/stackexchange/posts.tsv",
-        "--output", "results/bloomFilter"))).toArray)
-  }
-  println( s"Count-Min Sketch example took ${timerCMS} msec")
+//  val timerCMS = withTimeCalc("Running Count-Min Sketch example") {
+//    ToolRunner.run(new Configuration, new Tool, (classOf[CMSketch].getName ::
+//      (List("--local",
+//        "--input", "datasets/stackexchange/posts.tsv",
+//        "--output", "results/bloomFilter"))).toArray)
+//  }
+//  println( s"Count-Min Sketch example took ${timerCMS} msec")
 
 
 
