@@ -11,6 +11,7 @@ import com.twitter.scalding._
  * We will stream all that user-id of that data-set through a Count-Min Sketch to generate a
  * `frequency table`.
  *
+ * @author Antonios.Chalkiopoulos - http://scalding.io
  */
 class CMSketch(args: Args) extends Job(args) {
 
