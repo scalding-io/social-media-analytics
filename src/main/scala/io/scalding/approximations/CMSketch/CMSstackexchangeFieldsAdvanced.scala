@@ -1,5 +1,6 @@
 package io.scalding.approximations.CMSketch
 
+import com.twitter.algebird._
 import com.twitter.scalding._
 
 /**

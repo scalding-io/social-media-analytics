@@ -67,12 +67,12 @@ object ExamplesRunner extends App {
 
   val timerBFmillennialls = withTimeCalc("Running simple BF creation and queries") {
     ToolRunner.run(new Configuration, new Tool, (classOf[BFMillennialsExampleFields].getName :: "--local" ::
-      "--userdata"  :: "datasets/millennials/userdata.tsv" :: args.toList).toArray)
+      "--userdata" :: "datasets/millennials/userdata.tsv" :: args.toList).toArray)
   }
 
   val timerBFsimple = withTimeCalc("Running simple BF creation and queries") {
     ToolRunner.run(new Configuration, new Tool, (classOf[BFSimpleExample].getName :: "--local" ::
-      "--output" ::  "results/BF-SimpleExample.tsv" :: args.toList).toArray)
+      "--output" :: "results/BF-SimpleExample.tsv" :: "--serialized" :: "results/BF-SimpleExample-serialized.tsv" ::  args.toList).toArray)
   }
 
 
