@@ -74,13 +74,8 @@ object ExamplesRunner extends App {
   }
 
   val timerBFsimple = withTimeCalc("Running simple BF creation and queries") {
-    ToolRunner.run(new Configuration, new Tool, (classOf[BFSimpleExample].getName :: "--local" ::
-      "--output" :: "results/BF-SimpleExample.tsv" :: "--serialized" :: "results/BF-SimpleExample-serialized.tsv" ::  args.toList).toArray)
+    BFSetGenerator.run("results/BF-SimpleExample-serialized.tsv", "results/BF-SimpleExample.tsv", args, "--local")
   }
-
-
-
-
 
   // Count-Min Sketch Examples
   val timerCMS = withTimeCalc("Running Count-Min Sketch on stackexchange dataset") {

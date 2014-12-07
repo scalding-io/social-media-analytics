@@ -1,6 +1,6 @@
 package io.scalding.approximations
 
-import java.io.{ObjectOutputStream, ByteArrayOutputStream}
+import java.io._
 
 import com.twitter.algebird.{CMS, BF}
 
@@ -30,14 +30,9 @@ package object Utils {
     new String(stream.toByteArray)
   }
 
-  // Serialize a Bloom Filter using Kryo
-  def kryoSerialize(bf: BF) = {
-//    import com.twitter.chill.KryoInjection
-//    val bytes:  Array[Byte]    = new KryoInjection(someItem)
-//    val tryDecode: scala.util.Try[Any] = KryoInjection.invert(bytes)
 
-    "todo"
+  def deserialize[T](file: File): T = {
+    val is = new ObjectInputStream(new FileInputStream(file))
+    is.readObject().asInstanceOf[T]
   }
-
-
 }
