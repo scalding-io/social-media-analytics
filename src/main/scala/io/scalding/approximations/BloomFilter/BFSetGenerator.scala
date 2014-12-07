@@ -1,5 +1,7 @@
 package io.scalding.approximations.BloomFilter
 
+import java.io.{File, FileOutputStream, ObjectOutputStream}
+
 import cascading.tuple.{Tuple, TupleEntry}
 import com.twitter.scalding._
 import com.twitter.algebird.{BFItem, BloomFilterMonoid, BF, BloomFilter}
@@ -42,28 +44,38 @@ class BFSetGenerator(args:Args) extends Job(args) {
   usersBF
     .map { bf:BF => io.scalding.approximations.Utils.serialize(bf) }
     .toPipe('bloomFilter)
-    .write( TextLine(serialiazedBfFile) )
+    .mapTo( 'bloomFilter -> ('key, 'value)) { bf: Array[Byte] => ("bf", bf)}
+    .write( SequenceFile(serialiazedBfFile, ('key, 'value)) )
 
-
-  val bf = usersBF collect { case bf => bf }
 }
 
 class BFSetConsumer(args:Args) extends Job(args) {
   import com.twitter.scalding.filecache.DistributedCacheFile
 
+  val size = 100000
+  val fpProb = 0.01
+
+  implicit val bloomFilterMonoid = BloomFilter(size, fpProb)
+
   val serialiazedBfFile = DistributedCacheFile(args("serialized"))
-
-  val usersBF = io.scalding.approximations.Utils.deserialize[BF]( serialiazedBfFile.file )
-
   println(s"Reading Bloom Filter and from $serialiazedBfFile")
+
+  val usersBF =
+    SequenceFile(serialiazedBfFile.path, ('key, 'value) )
+      .read
+      .mapTo('value -> 'bloomFilter) { serialized: Array[Byte] => io.scalding.approximations.Utils.deserialize[BF](serialized) }
+      .toTypedPipe[BF]('bloomFilter)
+      .sum
 
   IterableSource( List( "ABCD", "EFGH", "123" ), 'toBeMatched )
     .read
-    .map('toBeMatched -> 'matches) { toBeMatched: String =>
-      val matches = if (usersBF.contains(toBeMatched).isTrue) "maybe" else "no"
+    .toTypedPipe[String]('toBeMatched)
+    .mapWithValue(usersBF) { (toBeMatched: String, usersFilterOp: Option[BF] )=>
+      val matches = if (usersFilterOp.get.contains(toBeMatched).isTrue) "maybe" else "no"
       println( s"BF contains '$toBeMatched' ? $matches"  )
-      matches
+      (toBeMatched, matches)
     }
+    .toPipe( 'toBeMatched, 'matches )
     .write( Csv(args("output")) )
 }
 

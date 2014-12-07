@@ -11,13 +11,14 @@ import com.twitter.algebird.{CMS, BF}
 package object Utils {
 
   // Serialize a Bloom Filter into a String
-  def serialize(bf: BF) = {
+  def serialize(bf: BF): Array[Byte] = {
     val stream = new ByteArrayOutputStream()
     val out = new ObjectOutputStream(stream)
     out.writeObject(bf)
     out.close()
     stream.close()
-    new String(stream.toByteArray)
+
+    stream.toByteArray
   }
 
   // Serialize a Count-min Sketch into a String
@@ -31,8 +32,8 @@ package object Utils {
   }
 
 
-  def deserialize[T](file: File): T = {
-    val is = new ObjectInputStream(new FileInputStream(file))
+  def deserialize[T](byteArray: Array[Byte]): T = {
+    val is = new ObjectInputStream(new ByteArrayInputStream(byteArray))
     is.readObject().asInstanceOf[T]
   }
 }
