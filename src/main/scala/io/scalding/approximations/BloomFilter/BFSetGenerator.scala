@@ -52,21 +52,8 @@ class BFSetGenerator(args:Args) extends Job(args) {
 class BFSetConsumer(args:Args) extends Job(args) {
   import com.twitter.scalding.filecache.DistributedCacheFile
 
-  val size = 100000
-  val fpProb = 0.01
-
-  implicit val bloomFilterMonoid = BloomFilter(size, fpProb)
-
-  val serialiazedBfFile = DistributedCacheFile(args("serialized"))
-  println(s"Reading Bloom Filter and from $serialiazedBfFile")
-
-  val usersBF =
-    SequenceFile(serialiazedBfFile.path, ('key, 'value) )
-      .read
-      .mapTo('value -> 'bloomFilter) { serialized: Array[Byte] => io.scalding.approximations.Utils.deserialize[BF](serialized) }
-      .toTypedPipe[BF]('bloomFilter)
-      .sum
-
+  val usersBF = readCachedBloomFilter(args("serialized"))
+  
   IterableSource( List( "ABCD", "EFGH", "123" ), 'toBeMatched )
     .read
     .toTypedPipe[String]('toBeMatched)
@@ -77,6 +64,23 @@ class BFSetConsumer(args:Args) extends Job(args) {
     }
     .toPipe( 'toBeMatched, 'matches )
     .write( Csv(args("output")) )
+  
+  def readCachedBloomFilter(filePath: String): ValuePipe[BF] = {
+    val size = 100000
+    val fpProb = 0.01
+
+    implicit val bloomFilterMonoid = BloomFilter(size, fpProb)
+    
+    val serialiazedBfFile = DistributedCacheFile(filePath)
+    println(s"Reading Bloom Filter and from $serialiazedBfFile")
+
+    val usersBF =
+      SequenceFile(serialiazedBfFile.path, ('key, 'value) )
+        .read
+        .mapTo('value -> 'bloomFilter) { serialized: Array[Byte] => io.scalding.approximations.Utils.deserialize[BF](serialized) }
+        .toTypedPipe[BF]('bloomFilter)
+        .sum
+  }
 }
 
 object BFSetGenerator {
