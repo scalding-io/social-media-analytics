@@ -74,12 +74,11 @@ class BFSetConsumer(args:Args) extends Job(args) {
     val serialiazedBfFile = DistributedCacheFile(filePath)
     println(s"Reading Bloom Filter and from $serialiazedBfFile")
 
-    val usersBF =
-      SequenceFile(serialiazedBfFile.path, ('key, 'value) )
-        .read
-        .mapTo('value -> 'bloomFilter) { serialized: Array[Byte] => io.scalding.approximations.Utils.deserialize[BF](serialized) }
-        .toTypedPipe[BF]('bloomFilter)
-        .sum
+    SequenceFile(serialiazedBfFile.path, ('key, 'value) )
+      .read
+      .mapTo('value -> 'bloomFilter) { serialized: Array[Byte] => io.scalding.approximations.Utils.deserialize[BF](serialized) }
+      .toTypedPipe[BF]('bloomFilter)
+      .sum
   }
 }
 
