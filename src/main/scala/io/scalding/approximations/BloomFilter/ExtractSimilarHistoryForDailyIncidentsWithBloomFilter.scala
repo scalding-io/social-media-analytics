@@ -11,9 +11,9 @@ import com.twitter.scalding.typed.TDsl._
  * returns all daily incidents together with the historical one of the same category in the same police district
  * grouped by category and district
  *
- * @author Stefano Galarragas - http://scalding.io
+ * @author Stefano Galarraga - http://scalding.io
  */
-class ExtractSimilarHistoryForDailyIncidentsWithBloomFilter(args: Args) extends Job(args) with FieldConversions {
+class ExtractSimilarHistoryForDailyIncidentsWithBloomFilter(args: Args) extends Job(args) {
   import incidentUtils._
 
   val output = args("output")
@@ -88,8 +88,8 @@ object incidentUtils extends FieldConversions {
       val matchingDailyDataSetBloomFilter =
         matchWith
           .map { incident =>
-          bloomFilterMonoid.create(incidentFilterKey(incident))
-        }
+            bloomFilterMonoid.create(incidentFilterKey(incident))
+          }
           .sum
 
       self
