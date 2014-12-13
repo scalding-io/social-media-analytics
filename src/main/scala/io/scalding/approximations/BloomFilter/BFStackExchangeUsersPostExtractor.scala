@@ -46,10 +46,10 @@ class BFStackExchangeUsersPostExtractor(args: Args) extends Job(args) {
     .join { usersInAgeRange.groupBy { _.id  } }
     .mapValues { postAndUser: (Post, User) =>
       val (post, user) = postAndUser
-      OutputUserPostInfo(user.id, user.displayName, user.accountId, user.age, post.id, post.parentID, post.creationDate)
+      (user.id, user.displayName, user.accountId, user.age, post.id, post.parentID, post.creationDate)
     }
     .values
-    .toPipe( OutputUserPostInfo.fields )
+    .toPipe( 'userId, 'displayName, 'accountId, 'age, 'postId, 'postParentID, 'postCreationDate )
     .write( Csv(args("output")) )
 }
 
@@ -82,8 +82,3 @@ object User {
 
 case class User(id: Long, displayName: String, lastAccessDate: String, accountId: Long, age: Int)
 
-object OutputUserPostInfo {
-  val fields = List('userId, 'displayName, 'accountId, 'age, 'postId, 'postParentID, 'postCreationDate)
-}
-
-case class OutputUserPostInfo(userId: Long, displayName: String, accountId: Long, age: Int, postId: Long, postParentID: Long, postCreationDate: String)
