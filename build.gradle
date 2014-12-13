@@ -2,7 +2,25 @@ apply plugin: 'application'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'scala'
+apply plugin: 'maven'
+apply plugin: 'java'
+apply plugin: 'gradle-one-jar'
 
+applicationName = "SocialMediaAnalytics"
+mainClassName = 'io.scalding.approximations.ExamplesRunner'
+
+
+ext {
+    hadoopVersion = "2.5.0-cdh5.2.0"
+    hadoopCoreVersion = "2.5.0-mr1-cdh5.2.0"
+    scaldingVersion = "0.12.0"
+    sl4jVersion = "1.7.7"
+    // Testing libraries
+    specs2Version = "2.4.13"
+    scalaTestVersion = "2.2.2"
+}
+
+// Repositories to download libraries from
 repositories {
     mavenLocal()
     mavenCentral()
@@ -23,28 +41,16 @@ repositories {
     }
 }
 
+// Dependencies for `build`
 buildscript {
     repositories {
         mavenCentral()
+        jcenter()
     }
     dependencies {
         classpath 'com.github.rholder:gradle-one-jar:1.0.4'
     }
 }
-
-apply plugin: 'gradle-one-jar'
-
-applicationName = "SocialMediaAnalytics"
-
-ext {
-    hadoopVersion = "2.5.0-cdh5.2.0"
-    hadoopCoreVersion = "2.5.0-mr1-cdh5.2.0"
-    scaldingVersion = "0.12.0"
-    sl4jVersion = "1.7.7"
-    // Testing libraries
-    specs2Version = "2.4.13"
-    scalaTestVersion = "2.2.2"}
-
 
 dependencies {
     compile 'org.scala-lang:scala-library:2.10.4'
@@ -57,7 +63,7 @@ dependencies {
 
     //compile group: 'com.twitter', name: 'chill_2.10', version: '0.5.1'
     //compile group: 'com.twitter', name: 'chill-algebird_2.10', version : '0.5.1'
-    compile group: 'com.twitter', name: 'chill-bijection_2.10', version : '0.5.1'
+    //compile group: 'com.twitter', name: 'chill-bijection_2.10', version : '0.5.1'
 
     compile group: 'org.slf4j', name: 'slf4j-api', version: sl4jVersion
     compile group: 'org.slf4j', name: 'slf4j-log4j12', version: sl4jVersion
@@ -65,6 +71,21 @@ dependencies {
     testCompile group: 'org.specs2', name: 'specs2_2.10', version: specs2Version
     testCompile group: 'org.scalatest', name: 'scalatest_2.10', version: scalaTestVersion
 }
+
+// Repository to upload artifacts to (nexus)
+//uploadArchives {
+//    repositories {
+//        mavenDeployer {
+//            // TO RELEASE change `snapshots` into `releases` and use a valid pom.version
+//            repository(url: "http://conjars/content/repositories/snapshots") {
+//                authentication(userName: mavenUser, password: mavenPassword)
+//            } // Username and password come from `~/.gradle/gradle.properties`
+//            pom.version = "1.0-SNAPSHOT"
+//            pom.artifactId = "scalding-approximations"
+//            pom.groupId = "io.scalding"
+//        }
+//    }
+//}
 
 // http://forums.gradle.org/gradle/topics/ant_scalac_using_target_jvm_1_5
 tasks.withType(ScalaCompile) {
@@ -85,13 +106,13 @@ task spec(dependsOn: ['testClasses'], type: JavaExec) {
     classpath = sourceSets.test.runtimeClasspath
 }
 
-task fatJarTask(type: OneJar) {
-    mainClass = 'io.scalding.approximations.ExamplesRunner'
+task hadoopJar(type: OneJar) {
+//    mainClass = 'io.scalding.approximations.ExamplesRunner'
+    mainClass = 'com.twitter.scalding.Tool'
     archiveName = 'scalding-approximations.jar'
 }
-
-mainClassName = "io.scalding.approximations.ExamplesRunner"
 
 // $ gradle run # To run all examples
 // $ gradle dependencies # To view dependency tree
 // $ gradle spec # To run all tests
+// $ gradle clean hadoopJar # to generate 2 jars at /build/libs/ (a library) & a hadoop ready jar
