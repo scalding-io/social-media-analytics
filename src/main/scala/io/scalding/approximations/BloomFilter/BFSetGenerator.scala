@@ -19,7 +19,7 @@ import java.net.URI
  *
  * The second job execute membership queries on some ids using the previously generated filter
  *
- * @author Antonios.Chalkiopoulos - http://scalding.io
+ * @author Antonios.Chalkiopoulos, Stefano.Galarraga - http://scalding.io
  */
 class BFSetGenerator(args:Args) extends Job(args) {
 
