@@ -29,8 +29,8 @@ Quickstart
 
 and to run the scalding tests
 
-    $ gradle spec
+    $ gradle test
 
 to generate a Hadoop executable JAR
 
-    $ gradle clean hadoopJar
+    $ gradle clean jar hadoopJar
