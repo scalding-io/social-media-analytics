@@ -7,4 +7,4 @@ scala:
   - 2.10.4
   - 2.9.3
 
-script: gradle test jar hadoopJar ++$TRAVIS_SCALA_VERSION 
+script: gradle -version; gradle test jar hadoopJar; echo "++$TRAVIS_SCALA_VERSION "
