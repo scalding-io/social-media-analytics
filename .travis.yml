@@ -1,0 +1,10 @@
+language: scala
+jdk:
+  - oraclejdk7
+  - openjdk6
+scala:
+  - 2.11.1
+  - 2.10.4
+  - 2.9.3
+
+script: gradle test jar hadoopJar ++$TRAVIS_SCALA_VERSION 
