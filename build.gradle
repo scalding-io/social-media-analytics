@@ -8,6 +8,9 @@ apply plugin: 'gradle-one-jar'
 
 applicationName = "SocialMediaAnalytics"
 mainClassName = 'io.scalding.approximations.ExamplesRunner'
+group = "io.scalding"
+version = "1.0"
+archivesBaseName = 'impatient'
 
 
 ext {
@@ -60,7 +63,7 @@ dependencies {
 
     compile group: 'org.apache.hadoop' , name: 'hadoop-common',   version: hadoopVersion
     compile group: 'org.apache.hadoop' , name: 'hadoop-core',     version: hadoopCoreVersion
-
+    compile group: 'org.apache.hadoop' , name: 'hadoop-client',   version: hadoopVersion
     //compile group: 'com.twitter', name: 'chill_2.10', version: '0.5.1'
     //compile group: 'com.twitter', name: 'chill-algebird_2.10', version : '0.5.1'
     //compile group: 'com.twitter', name: 'chill-bijection_2.10', version : '0.5.1'
@@ -70,6 +73,9 @@ dependencies {
 
     testCompile group: 'org.specs2', name: 'specs2_2.10', version: specs2Version
     testCompile group: 'org.scalatest', name: 'scalatest_2.10', version: scalaTestVersion
+
+    // in case you need to add JARs from a local build
+    compile fileTree( dir: 'lib', includes: ['*.jar'] )
 }
 
 // Repository to upload artifacts to (nexus)
@@ -89,7 +95,7 @@ dependencies {
 
 // http://forums.gradle.org/gradle/topics/ant_scalac_using_target_jvm_1_5
 tasks.withType(ScalaCompile) {
-    scalaCompileOptions.additionalParameters = ['-target:jvm-1.7']
+    scalaCompileOptions.additionalParameters = ['-target:jvm-1.6']
     scalaCompileOptions.useAnt = false
 }
 
@@ -116,3 +122,28 @@ task hadoopJar(type: OneJar) {
 // $ gradle dependencies # To view dependency tree
 // $ gradle spec # To run all tests
 // $ gradle clean hadoopJar # to generate 2 jars at /build/libs/ (a library) & a hadoop ready jar
+
+
+// Emulate Maven shade plugin with a fat jar.
+// http://docs.codehaus.org/display/GRADLE/Cookbook#Cookbook-Creatingafatjar
+//jar {
+//    from configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+//}
+// Provided configuration as suggested in GRADLE-784
+//sourceSets {
+//    main {
+//        compileClasspath
+//    }
+//}
+jar {
+    description = "Assembles a Hadoop-ready JAR file"
+    doFirst {
+        into( 'lib' ) {
+            from configurations.compile
+        }
+    }
+
+    manifest {
+        attributes( "Main-Class": "com.twitter.scalding.Tool" )
+    }
+}
