@@ -1,6 +1,8 @@
 Social Media Data Mining and Analytics
 ======================================
 
+[![Build Status](https://travis-ci.org/scalding-io/social-media-analytics.svg?branch=master)](https://travis-ci.org/scalding-io/social-media-analytics)
+
 This is the expected title for the book from Wiley that will be available March 2015 and authored by Gabor Szabo, Oscar Boykin and Antonios Chalkiopoulos
 
 <p align="center">
