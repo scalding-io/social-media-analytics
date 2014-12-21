@@ -113,7 +113,7 @@ fatJar {
   exclude 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/*.SF'
 }
 
-hadoopJar.dependsOn fatJar
+task hadoopJar(dependsOn: ['fatJar'])
 
 // Repository to upload artifacts to (nexus)
 //uploadArchives {
