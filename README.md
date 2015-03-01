@@ -36,3 +36,14 @@ and to run the scalding tests
 to generate a Hadoop executable JAR
 
     $ gradle clean jar hadoopJar
+    $ gradle clean hadoopJar
+
+to run the Hadoop JAR file
+
+    $ java -jar build/libs/scalding-approximations.jar io.scalding.approximations.BloomFilter.BFStackExchangeUsersPostExtractor          --local --minAge 18 --maxAge 21 --posts datasets/stackexchange/posts.tsv          --users datasets/stackexchange/users.tsv          --output results/BF-StackExchangeUsersPost.tsv
+
+FAQ
+===
+
+I'm getting `Unsupported major.minor version 51.0` exceptions
+

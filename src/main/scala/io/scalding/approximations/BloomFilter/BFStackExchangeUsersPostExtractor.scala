@@ -1,9 +1,8 @@
 package io.scalding.approximations.BloomFilter
 
-import cascading.tuple.Fields
 import com.twitter.algebird.BloomFilter
 import com.twitter.scalding.typed.TDsl
-import com.twitter.scalding.{Csv, Tsv, Job, Args}
+import com.twitter.scalding._
 
 /**
  * @author Stefano Galarraga - http://scalding.io
@@ -50,8 +49,8 @@ class BFStackExchangeUsersPostExtractor(args: Args) extends Job(args) {
       (user.id, user.displayName, user.accountId, user.age, post.id, post.parentID, post.creationDate)
     }
     .values
-    .toPipe( 'userId, 'displayName, 'accountId, 'age, 'postId, 'postParentID, 'postCreationDate )
-    .write( Csv(args("output")) )
+    //.toPipe( 'userId, 'displayName, 'accountId, 'age, 'postId, 'postParentID, 'postCreationDate )
+    .write( TypedTsv(args("output")) )
 }
 
 
@@ -67,7 +66,7 @@ object Post {
 }
 
 case class Post(id: Long, postTypeID: Long, parentID: Long, ownerUserID: Long, creationDate: String,
-                wiewCount: Long, favoriteCount: Long, tags: String, keywords: String)
+                viewCount: Long, favoriteCount: Long, tags: String, keywords: String)
 
 object User {
 

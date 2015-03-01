@@ -65,10 +65,16 @@ dependencies {
 
     compile group: 'org.apache.hadoop' , name: 'hadoop-common',   version: hadoopVersion
     compile group: 'org.apache.hadoop' , name: 'hadoop-core',     version: hadoopCoreVersion
+    compile group: 'org.apache.hadoop' , name: 'hadoop-client',   version: hadoopVersion
+    //compile group: 'com.twitter', name: 'chill_2.10', version: '0.5.1'
+    //compile group: 'com.twitter', name: 'chill-algebird_2.10', version : '0.5.1'
+    //compile group: 'com.twitter', name: 'chill-bijection_2.10', version : '0.5.1'
 
     compile group: 'cascading' , name: 'cascading-core', 	  version: cascadingVersion
     compile group: 'cascading' , name: 'cascading-hadoop', 	  version: cascadingVersion
     compile group: 'cascading' , name: 'cascading-hadoop2-mr1',   version: cascadingVersion
+
+    compile group: 'driven', name: 'driven-plugin', version: '1.2-eap-4'
 
     compile group: 'org.slf4j' , name: 'slf4j-api',               version: sl4jVersion
     compile group: 'org.slf4j' , name: 'slf4j-log4j12',           version: sl4jVersion
@@ -83,6 +89,20 @@ dependencies {
 
 }
 
+// Repository to upload artifacts to (nexus)
+//uploadArchives {
+//    repositories {
+//        mavenDeployer {
+//            // TO RELEASE change `snapshots` into `releases` and use a valid pom.version
+//            repository(url: "http://conjars/content/repositories/snapshots") {
+//                authentication(userName: mavenUser, password: mavenPassword)
+//            } // Username and password come from `~/.gradle/gradle.properties`
+//            pom.version = "1.0-SNAPSHOT"
+//            pom.artifactId = "scalding-approximations"
+//            pom.groupId = "io.scalding"
+//        }
+//    }
+//}
 
 // http://forums.gradle.org/gradle/topics/ant_scalac_using_target_jvm_1_5
 tasks.withType(ScalaCompile) {

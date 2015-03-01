@@ -41,7 +41,7 @@ class CMSstackexchangeTyped(args: Args) extends Job(args) {
 
   // Serialize the CMS
   stackExchangeCMS
-    .map { cms:CMS => io.scalding.approximations.Utils.serialize(cms) }
+    .map { cms:CMS => new String(io.scalding.approximations.Utils.serialize(cms)) }
     .write( TypedCsv(args("serialized")) )
 
 }

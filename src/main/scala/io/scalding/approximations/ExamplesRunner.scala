@@ -41,7 +41,7 @@ object ExamplesRunner extends App {
 
 
 
-//  // Bloom Filter Examples
+  // Bloom Filter Examples
   val daily = "datasets/SanFranciscoPoliceDepartment/SFPD_Incidents_Previous_Day.csv"
   val historical = "datasets/SanFranciscoPoliceDepartment/SFPD_Incidents_Previous_Three_Months.csv"
   val similarHistoryWithBF = "results/similar-history-with-BF"
@@ -66,11 +66,7 @@ object ExamplesRunner extends App {
     s"and writing output with bloom filter at '$similarHistoryWithBF' and without at $similarHistoryWithoutBF" )
 
   val timerBFmillennialls = withTimeCalc("Running simple BF creation and queries") {
-    ToolRunner.run(new Configuration, new Tool, (classOf[BFMillennialsExampleFields].getName :: "--local" ::
-      "--input" :: "datasets/millennials/userdata.tsv" ::
-      "--output":: "results/BF-MillennialsFields.tsv" ::
-      "--serialized":: "results/BF-MillennialsFields-serialized.tsv" ::
-      args.toList).toArray)
+    ToolRunner.run(new Configuration, new Tool, (classOf[BFExampleFields].getName :: "--local" :: args.toList).toArray)
   }
 
   val timerBFsimple = withTimeCalc("Running simple BF creation and queries") {

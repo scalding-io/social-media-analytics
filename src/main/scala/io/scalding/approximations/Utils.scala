@@ -5,16 +5,15 @@ import java.io._
 import com.twitter.algebird.{CMS, BF}
 
 /**
- * A utility package object to demonstrate how to serialize algebird's
- * approximation
+ * A utility package object for serializing approximation data structures to disk
  */
 package object Utils {
 
-  // Serialize a Bloom Filter into a String
-  def serialize(bf: BF): Array[Byte] = {
+  // Serialize a Bloom Filter in a byte array
+  def serialize(dataStructure: Any): Array[Byte] = {
     val stream = new ByteArrayOutputStream()
     val out = new ObjectOutputStream(stream)
-    out.writeObject(bf)
+    out.writeObject(dataStructure)
     out.close()
     stream.close()
 
@@ -22,14 +21,15 @@ package object Utils {
   }
 
   // Serialize a Count-min Sketch into a String
-  def serialize(cms: CMS) = {
-    val stream = new ByteArrayOutputStream()
-    val out = new ObjectOutputStream(stream)
-    out.writeObject(cms)
-    out.close()
-    stream.close()
-    new String(stream.toByteArray)
-  }
+//  def serialize(cms: CMS): Array[Byte] = {
+//    val stream = new ByteArrayOutputStream()
+//    val out = new ObjectOutputStream(stream)
+//    out.writeObject(cms)
+//    out.close()
+//    stream.close()
+//
+//    stream.toByteArray
+//  }
 
 
   def deserialize[T](byteArray: Array[Byte]): T = {
