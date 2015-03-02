@@ -45,5 +45,6 @@ to run the Hadoop JAR file
 FAQ
 ===
 
-I'm getting `Unsupported major.minor version 51.0` exceptions
+How will a flow execute on Hadoop ?
 
+    Run with --tool.graph
