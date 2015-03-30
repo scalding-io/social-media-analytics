@@ -94,7 +94,7 @@ object incidentUtils extends FieldConversions {
 
       self
         .filterWithValue(matchingDailyDataSetBloomFilter) { (incident, bloomFilterOp) =>
-        bloomFilterOp.map { filter => filter.contains( incidentFilterKey(incident) ).isTrue } getOrElse false
+        bloomFilterOp.exists { filter => filter.contains(incidentFilterKey(incident)).isTrue }
       }
 
     }

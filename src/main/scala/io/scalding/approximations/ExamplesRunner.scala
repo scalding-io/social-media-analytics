@@ -23,21 +23,21 @@ object ExamplesRunner extends App {
     ToolRunner.run(new Configuration, new Tool, (classOf[HLLExampleForTwoHours].getName ::
       List("--local")).toArray)
   }
-  println(s"Running HLL took ${timerHLL} msec")
+  println(s"Running HLL took $timerHLL msec")
 
   val stackExchangePosts = "datasets/stackexchange/posts.tsv"
   val stackexchangeHLL = withTimeCalc("Running HLL cardinality count on stackexchange data-set") {
     ToolRunner.run(new Configuration, new Tool, (classOf[HLLstackexchange].getName ::
       List("--local","--input",stackExchangePosts,"--output","results/HLL-stackexchange")).toArray)
   }
-  println(s"Running HLL took ${timerHLL} msec")
+  println(s"Running HLL took $timerHLL msec")
 
   val wikipediaRevisions = "datasets/wikipedia/wikipedia-revisions-sample.tsv"
   val wikipediaHLL = withTimeCalc("Running HLL cardinality count on wikipedia data-set") {
     ToolRunner.run(new Configuration, new Tool, (classOf[HLLwikipedia].getName ::
       List("--local","--input",wikipediaRevisions,"--output","results/HLL-wikipedia")).toArray)
   }
-  println(s"Running HLL took ${timerHLL} msec")
+  println(s"Running HLL took $timerHLL msec")
 
 
 
@@ -53,14 +53,14 @@ object ExamplesRunner extends App {
       historical :: "--daily" :: daily :: args.toList
     ToolRunner.run(new Configuration, new Tool, BFjobArgs.toArray)
   }
-  println(s"Running using BF took ${timerBF} msec")
+  println(s"Running using BF took $timerBF msec")
   val timerWithoutBF = withTimeCalc("Running Similar history => Without BF") {
     val withoutBFjobArgs =  classOf[ExtractSimilarHistoryForDailyIncidentsWithNoBloomFilter].getName ::
       "--local" :: "--output" :: similarHistoryWithoutBF :: "--historical" :: historical ::
       "--daily" :: daily :: args.toList
     ToolRunner.run(new Configuration, new Tool, withoutBFjobArgs.toArray)
   }
-  println(s"Running without BF took ${timerWithoutBF} msec")
+  println(s"Running without BF took $timerWithoutBF msec")
 
   println( s"Analysing daily incident file '$daily' matching with historical incidents at '$historical' with and without bloom filter " +
     s"and writing output with bloom filter at '$similarHistoryWithBF' and without at $similarHistoryWithoutBF" )
@@ -70,7 +70,7 @@ object ExamplesRunner extends App {
   }
 
   val timerBFsimple = withTimeCalc("Running simple BF creation and queries") {
-    BFSetGenerator.run("results/BF-SimpleExample-serialized.tsv", "results/BF-SimpleExample.tsv", args, "--local")
+    RunBFExample.run("results/BF-SimpleExample-serialized.tsv", "results/BF-SimpleExample.tsv", args, "--local")
   }
 
   // Count-Min Sketch Examples
@@ -80,7 +80,7 @@ object ExamplesRunner extends App {
         "--output":: "results/CMS-stackexchangeFields.tsv" ::
         "--serialized" :: "results/BF-SimpleExample-serialized.tsv" :: args.toList).toArray)
   }
-  println( s"Count-Min Sketch example on `stackexchange` took ${timerCMS} msec")
+  println( s"Count-Min Sketch example on `stackexchange` took $timerCMS msec")
 
   val timerCMSstackexchangeTyped = withTimeCalc("Running Count-Min Sketch on stackexchange dataset") {
     ToolRunner.run(new Configuration, new Tool, (classOf[CMSstackexchangeTyped].getName :: "--local" ::
@@ -88,7 +88,7 @@ object ExamplesRunner extends App {
       "--output":: "results/CMS-stackexchangeTyped.tsv" ::
       "--serialized" :: "results/CMS-stackexchangeTyped-serialized.tsv" :: args.toList).toArray)
   }
-  println( s"Count-Min Sketch example on `stackexchange` took ${timerCMS} msec")
+  println( s"Count-Min Sketch example on `stackexchange` took $timerCMS msec")
 
   /**
    * A `helper` method. Using this method we can `wrap` a block of code and count the time

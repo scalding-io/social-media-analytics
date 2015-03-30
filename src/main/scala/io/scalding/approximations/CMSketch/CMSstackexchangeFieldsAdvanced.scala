@@ -42,11 +42,10 @@ class CMSstackexchangeFieldsAdvanced(args: Args) extends Job(args) {
     .discard('OwnerUserID)
     .map('sketch -> 'sketch) { s: Option[CMS] =>
       s match {
-        case Some(sketch) => {
-          println(" + Total count in the CM sketch : " + sketch.totalCount)
-          println(" + Heavy Hitters : " + sketch.heavyHitters.size)
-          sketch.heavyHitters.foreach( userid => { println("  - User ID : " + userid + " with estimated cardinality : " + sketch.frequency(userid).estimate) } )
-        }
+        case Some(sk) =>
+          println(" + Total count in the CM sketch : " + sk.totalCount)
+          println(" + Heavy Hitters : " + sk.heavyHitters.size)
+          sk.heavyHitters.foreach( userid => { println("  - User ID : " + userid + " with estimated cardinality : " + sk.frequency(userid).estimate) } )
         case _ => println("No information to display")
       }
       s
@@ -69,20 +68,3 @@ class CMSstackexchangeFieldsAdvanced(args: Args) extends Job(args) {
   }
   
 }
-
-//  val n = 100
-//  val stream:List[Long] = List.tabulate[List[Long]](n)( k => {
-//    val freq = n - k
-//    List.fill[Long](freq)( k )
-//  }).flatten
-//
-//  val result = stream.foldLeft(monoid, cmsitem)( (a,b) => {
-//    val (mymonoid, myitem) = a
-//    val number = b
-//    val newitem = updateCMS( mymonoid, myitem, number )
-//    val retval = (mymonoid, newitem)
-//    retval
-//  })._2.get
-
-// Thanks to https://github.com/krishnanraman/bigdata/blob/f41ec92e9731358c1c2ede659eb2114ee5fd07fe/CMSTest.scala
-

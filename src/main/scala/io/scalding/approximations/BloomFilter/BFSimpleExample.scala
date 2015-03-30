@@ -2,17 +2,15 @@ package io.scalding.approximations.BloomFilter
 
 import com.twitter.scalding._
 import com.twitter.algebird.{BF, BloomFilter}
-import com.twitter.scalding.typed.TDsl._
+import com.twitter.scalding.typed.IterablePipe
 
 /**
  * We generate 100.000 user ids ( 1 .. 100000 ) and add them into a BloomFilter
  * with a small estimation error. Then we execute membership queries on some ids
  *
- * @author Antonios.Chalkiopoulos - http://scalding.io
+ * @author Antonios Chalkiopoulos - http://scalding.io
  */
 class BFSimpleExample(args:Args) extends Job(args) {
-
-  case class User(userID: String)
 
   val size = 100000
   val fpProb = 0.01
@@ -20,8 +18,8 @@ class BFSimpleExample(args:Args) extends Job(args) {
   implicit val bloomFilterMonoid = BloomFilter(size, fpProb)
 
   // Generate and add 100K ids into the (Bloom) filter
-  val usersList = (1 to size).toList.map{ x => User(x.toString) }
-  val usersBF = IterableSource[User](usersList)
+  val usersList = (1 to size).toList.map{ x => SimpleUser(x.toString) }
+  val usersBF = IterablePipe[SimpleUser](usersList, flowDef, mode)
     .map { user => bloomFilterMonoid.create(user.userID) }
     .sum
 

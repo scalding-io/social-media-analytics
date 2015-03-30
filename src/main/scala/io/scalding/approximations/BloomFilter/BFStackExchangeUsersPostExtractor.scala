@@ -5,10 +5,10 @@ import com.twitter.scalding.typed.TDsl
 import com.twitter.scalding._
 
 /**
- * @author Stefano Galarraga - http://scalding.io
+ * This example extracts the list of posts grouped by User for the users in the
+ * specified age range
  *
- *         This example extracts the list of posts grouped by User for the users in the
- *         specified age range
+ * @author Stefano Galarraga - http://scalding.io
  */
 class BFStackExchangeUsersPostExtractor(args: Args) extends Job(args) {
   import TDsl._

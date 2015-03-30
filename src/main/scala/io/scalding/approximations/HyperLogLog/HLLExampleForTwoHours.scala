@@ -8,7 +8,7 @@ import com.twitter.scalding._
  * Example of adding 2 HLL of ~ 100.000 elements each
  * resulting into a ~ 120.000 estimation as 80.000 elements exist in both sets
  *
- * @author Antonios.Chalkiopoulos - http://scalding.io
+ * @author Antonios Chalkiopoulos - http://scalding.io
  */
 class HLLExampleForTwoHours(args: Args) extends Job(args) {
 
@@ -17,14 +17,14 @@ class HLLExampleForTwoHours(args: Args) extends Job(args) {
   val inaccuracy = 2D
 
   // Implicit conversion of text to bytes
-  implicit def text2Bytes(text:String) = text.getBytes
+  implicit def text2Bytes(text:String): Array[Byte] = text.getBytes
 
   // Helper method to print cardinality estimations on screen
   def printSizeOfHLL(pipe: Pipe, symbol: Symbol, name:String ) =
      pipe.mapTo( symbol -> symbol ) {
        hll: DenseHLL =>
          val estimation = hll.approximateSize.estimate
-         println(s"Cardinality estimation of (${name}) set : ${estimation} with ${inaccuracy} % estimation error")
+         println(s"Cardinality estimation of ($name) set : $estimation with $inaccuracy % estimation error")
          hll
      }
 
@@ -32,7 +32,7 @@ class HLLExampleForTwoHours(args: Args) extends Job(args) {
   val hour1List = (1 to setSize).toList
   val hour1 = IterableSource[Int](hour1List, 'numbers)
     .groupAll { group =>
-      group.hyperLogLog[String](('numbers ->'denseHHL) , inaccuracy)
+      group.hyperLogLog[String]('numbers ->'denseHHL , inaccuracy)
     }
 
   // 2st hour - the page got 100 K unique visitors. 80 K of them were visitors in the previous hour as well
@@ -40,7 +40,7 @@ class HLLExampleForTwoHours(args: Args) extends Job(args) {
   val hour2List = (20000 to setSize+20000).toList
   val hour2 = IterableSource[Int](hour2List, 'numbers)
     .groupAll { group =>
-      group.hyperLogLog[String](('numbers ->'denseHHL) , inaccuracy)
+      group.hyperLogLog[String]('numbers -> 'denseHHL , inaccuracy)
     }
 
   printSizeOfHLL(hour1, 'denseHHL, "1st hour")

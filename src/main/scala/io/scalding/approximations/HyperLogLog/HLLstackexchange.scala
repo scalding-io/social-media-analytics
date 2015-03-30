@@ -20,21 +20,21 @@ class HLLstackexchange(args: Args) extends Job(args) {
    val inaccuracy = 2D
 
    // Implicit conversion of text to bytes
-   implicit def long2Bytes(num:Long) = num.toString.getBytes
+   implicit def long2Bytes(num:Long): Array[Byte] = num.toString.getBytes
 
    // Helper method to print cardinality estimations on screen
    def printSizeOfHLL(pipe: Pipe, symbol: Symbol, name:String ) =
       pipe.mapTo( symbol -> symbol ) {
         hll: DenseHLL =>
           val estimation = hll.approximateSize.estimate
-          println(s"${name} cardinality estimation: ${estimation} with ${inaccuracy} % error")
+          println(s"$name cardinality estimation: $estimation with $inaccuracy % error")
           hll
       }
 
   val stackExchangePosts = Tsv(inputFiles,schema).read
     .project('OwnerUserID)
     .groupAll { group =>
-       group.hyperLogLog[Long](('OwnerUserID ->'denseHHL) , inaccuracy)
+       group.hyperLogLog[Long]('OwnerUserID ->'denseHHL , inaccuracy)
     }
 
    printSizeOfHLL(stackExchangePosts, 'denseHHL, "stackexchange")

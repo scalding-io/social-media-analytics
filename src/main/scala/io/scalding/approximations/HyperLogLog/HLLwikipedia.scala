@@ -20,14 +20,14 @@ class HLLwikipedia(args: Args) extends Job(args) {
    val inaccuracy = 2D
 
    // Implicit conversion of text to bytes
-   implicit def long2Bytes(num:Long) = num.toString.getBytes
+   implicit def long2Bytes(num:Long): Array[Byte] = num.toString.getBytes
 
    // Helper method to print cardinality estimations on screen
    def printSizeOfHLL(pipe: Pipe, symbol: Symbol, name:String ) =
       pipe.mapTo( symbol -> symbol ) {
         hll: DenseHLL =>
           val estimation = hll.approximateSize.estimate
-          println(s"Cardinality estimation of (${name}) set : ${estimation} with ${inaccuracy} % estimation error")
+          println(s"Cardinality estimation of ($name) set : $estimation with $inaccuracy % estimation error")
           hll
       }
 
@@ -35,7 +35,7 @@ class HLLwikipedia(args: Args) extends Job(args) {
     .project('ContributorID)
     
     .groupAll { group =>
-       group.hyperLogLog[Long](('ContributorID ->'denseHHL) , inaccuracy)
+       group.hyperLogLog[Long]('ContributorID ->'denseHHL , inaccuracy)
     }
 
    printSizeOfHLL(wikipediaPosts, 'denseHHL, "wikipedia")

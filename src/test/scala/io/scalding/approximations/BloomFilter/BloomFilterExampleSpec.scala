@@ -14,7 +14,7 @@ class BloomFilterExampleSpec extends FlatSpec with Matchers with FieldConversion
   "ExtractSimilarHistoryForDailyIncidentsWithBloomFilter" should "Filter Elements not in Big File with some error" in {
 
     val size = 100
-    val matchingHistorical = ((1 to size) map  { idx => fakeIncident(idx, s"category_${idx % 2}", s"district_${idx % 2}")  } )
+    val matchingHistorical = (1 to size) map { idx => fakeIncident(idx, s"category_${idx % 2}", s"district_${idx % 2}") }
     val nonMatchingHistorical = Seq(
       fakeIncident(90003, "category_1", "no_district"),
       fakeIncident(90004, "no_matching_category", "no_matching_district")
@@ -36,7 +36,7 @@ class BloomFilterExampleSpec extends FlatSpec with Matchers with FieldConversion
       .source(Csv("daily", fields = Incident.fields, skipHeader = true), daily)
       .sink(Csv("output")) {
         buffer: mutable.Buffer[(String, String, Long, String, String, String, String)] =>
-            buffer.toList.map { _._3 } should not contain (atLeastOneOf(90003, 90004))
+            buffer.toList.map { _._3 } should not contain atLeastOneOf(90003, 90004)
       }
       .run
   }
@@ -44,7 +44,7 @@ class BloomFilterExampleSpec extends FlatSpec with Matchers with FieldConversion
   "ExtractSimilarHistoryForDailyIncidentsWitNohBloomFilter" should "Filter Elements not in Big File with some error" in {
 
     val size = 100
-    val matchingHistorical = ((1 to size) map  { idx => fakeIncident(idx, s"category_${idx % 2}", s"district_${idx % 2}")  } )
+    val matchingHistorical = (1 to size) map { idx => fakeIncident(idx, s"category_${idx % 2}", s"district_${idx % 2}") }
     val nonMatchingHistorical = Seq(
       fakeIncident(90003, "category_1", "no_district"),
       fakeIncident(90004, "no_matching_category", "no_matching_district")
@@ -65,7 +65,7 @@ class BloomFilterExampleSpec extends FlatSpec with Matchers with FieldConversion
       .source(Csv("daily", fields = Incident.fields, skipHeader = true), daily)
       .sink(Csv("output")) {
         buffer: mutable.Buffer[(String, String, Long, String, String, String, String)] =>
-          buffer.toList.map { _._3 } should not contain (atLeastOneOf(90003, 90004))
+          buffer.toList.map { _._3 } should not contain atLeastOneOf(90003, 90004)
       }
       .run
   }

@@ -7,7 +7,7 @@ import scala.util.Random
 /**
  * A simple data generator to simulate the a set of users for the `Millennials` example
  *
- * @author Antonios.Chalkiopoulos - http://scalding.io
+ * @author Antonios Chalkiopoulos - http://scalding.io
  */
 class DataGenerator(args: Args) extends Job(args) {
 

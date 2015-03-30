@@ -5,6 +5,8 @@ import com.twitter.algebird._
 
 /**
  * Scalding example of building a Bloom Filter using the Fields API
+ *
+ * @author Antonios Chalkiopoulos - http://scalding.io
  */
 class BFExampleFields(args:Args) extends Job(args) with FieldConversions {
 
@@ -19,7 +21,7 @@ class BFExampleFields(args:Args) extends Job(args) with FieldConversions {
   val serialized=args.getOrElse("serialized","results/BFExampleFields.bf")
 
   val pipe = Tsv(input, List('username, 'yearBorn)).read
-    .filter('yearBorn) { yearBorn:Int => (yearBorn > 1980 & yearBorn < 2000) }
+    .filter('yearBorn) { yearBorn:Int => yearBorn > 1980 & yearBorn < 2000 }
     .project('username)
     .groupAll { group =>
       group.foldLeft('username -> 'bloom)(bfMonoid.zero) {
@@ -34,6 +36,7 @@ class BFExampleFields(args:Args) extends Job(args) with FieldConversions {
     println( "195000 " + x.contains("195000").isTrue)
     ""
   }
+
 
   // Serialize the BF
   pipe
