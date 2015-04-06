@@ -1,62 +1,50 @@
 package io.scalding.approximations.HyperLogLog
 
-import cascading.pipe.Pipe
-import com.twitter.algebird.{DenseHLL, HLL}
+import com.twitter.algebird._
 import com.twitter.scalding._
 
 /**
  * Example of adding 2 HLL of ~ 100.000 elements each
  * resulting into a ~ 120.000 estimation as 80.000 elements exist in both sets
  *
+ * This example uses the Scalding Typed API
+ *
+ * https://github.com/twitter/scalding/wiki/Aggregation-using-Algebird-Aggregators
+ *
  * @author Antonios Chalkiopoulos - http://scalding.io
  */
+case class Users(userID: Int)
+
 class HLLExampleForTwoHours(args: Args) extends Job(args) {
 
-  // Setting up example : 100K elements on each set, 2% inaccuracy using HLL (4 KBytes of memory)
-  val setSize = 100000
-  val inaccuracy = 2D
+  // HLL Error is about 1.04/sqrt(2^{bits}), so you want something like 12 bits for ~2% error
+  // which means each HLLInstance is about 2^{12} = 4kb per instance.
+  val unique = HyperLogLogAggregator
+    .sizeAggregator(12)
+    //convert user names to UTF-8 encoded bytes as HyperLogLog expects a byte array.
+    .composePrepare[Users](_.userID.toString.getBytes("UTF-8"))
 
-  // Implicit conversion of text to bytes
-  implicit def text2Bytes(text:String): Array[Byte] = text.getBytes
+  // 1st hour - a web page got 100 K unique visitors
+  val hour1List = (1 to 100000).map( Users ).toList
+  val hour1 = TypedPipe.from(hour1List)
 
-  // Helper method to print cardinality estimations on screen
-  def printSizeOfHLL(pipe: Pipe, symbol: Symbol, name:String ) =
-     pipe.mapTo( symbol -> symbol ) {
-       hll: DenseHLL =>
-         val estimation = hll.approximateSize.estimate
-         println(s"Cardinality estimation of ($name) set : $estimation with $inaccuracy % estimation error")
-         hll
-     }
+  hour1
+    .aggregate(unique)
+    .map{ x => println(s"Cardinality of HOUR 1: $x"); x }
+    .write(TypedTsv("results/HLL-1stHour"))
 
-  // 1st hour - the page got 100 K unique visitors
-  val hour1List = (1 to setSize).toList
-  val hour1 = IterableSource[Int](hour1List, 'numbers)
-    .groupAll { group =>
-      group.hyperLogLog[String]('numbers ->'denseHHL , inaccuracy)
-    }
+  // 2st hour - the page got 100 K unique visitors. 80 K ( 20,001 .. 100,000) of them were visitors in the previous hour as well
+  val hour2List = (20001 to 120000).map( Users ).toList
+  val hour2 = TypedPipe.from(hour2List)
 
-  // 2st hour - the page got 100 K unique visitors. 80 K of them were visitors in the previous hour as well
-  // and there are 20 K more new unique users this hour
-  val hour2List = (20000 to setSize+20000).toList
-  val hour2 = IterableSource[Int](hour2List, 'numbers)
-    .groupAll { group =>
-      group.hyperLogLog[String]('numbers -> 'denseHHL , inaccuracy)
-    }
-
-  printSizeOfHLL(hour1, 'denseHHL, "1st hour")
-    .write(TextLine("results/HLL-1stHour"))
-
-  printSizeOfHLL(hour2, 'denseHHL, "2nd hour")
-    .write(TextLine("results/HLL-2ndHour"))
+  hour2
+    .aggregate(unique)
+    .map{ x => println(s"Cardinality of HOUR 2: $x"); x }
+    .write(TypedTsv("results/HLL-2ndHour"))
 
   val unionTwoHours = (hour1 ++ hour2)
-    .groupAll { group =>
-      group.reduce('denseHHL -> 'denseHHL) {
-        (left:HLL,right:HLL) => left + right
-      }
-    }
-
-  printSizeOfHLL(unionTwoHours, 'denseHHL, "1st and 2nd hour")
-    .write(TextLine("results/HLL-BothHours"))
+    .aggregate(unique)
+    .map{ x => println(s"Cardinality of HOUR 1 & HOUR: 2 $x"); x }
+    .write(TypedTsv("results/HLL-BothHours"))
 
 }
