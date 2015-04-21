@@ -1,5 +1,7 @@
 package io.scalding.approximations.performance
 
+import io.scalding.approximations.Utils
+
 /**
  * A simple scala app - to demonstrate how much space on disk a mutable Set requires
  */

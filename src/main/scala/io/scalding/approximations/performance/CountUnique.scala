@@ -5,6 +5,8 @@ import com.twitter.scalding._
 
 /**
  * A Scalding job to count unique elements using HLL
+ *
+ * Using a 3GB dataset - results in 23 Map tasks followed by 1 Reduce task
  */
 class CountUniqueHLL(args: Args) extends Job(args) {
 
@@ -17,10 +19,10 @@ class CountUniqueHLL(args: Args) extends Job(args) {
     .sizeAggregator(12)
     .composePrepare[String](_.getBytes("UTF-8"))
 
-  val countUniquePipe = TypedPipe.from(TypedTsv[(String)](input))
+  val countUniquePipe = TypedPipe.from(TextLine(input))
     .aggregate(unique)
     .map { x => println(s"Cardinality of dataset: : $x"); x }
-    .write(TypedTsv(output))
+    .write(TypedCsv(output))
 
 }
 
@@ -32,7 +34,7 @@ class CountUnique(args: Args) extends Job(args) {
   val input = args.getOrElse("input", "datasets/100MillionUnique")
   val output = args.getOrElse("output", "datasets/100MillionUniqueCardinality")
 
-  val countUniquePipe = TypedPipe.from(TypedTsv[(String)](input))
+  val countUniquePipe = TypedPipe.from(TextLine(input))
     .distinct
     .groupAll
     .sum
