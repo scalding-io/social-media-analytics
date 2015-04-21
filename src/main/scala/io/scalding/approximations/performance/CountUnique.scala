@@ -27,7 +27,7 @@ class CountUniqueHLL(args: Args) extends Job(args) {
 }
 
 /**
- * A Scalding job to count unique elements using HLL
+ * A Scalding job for 100% accurate unique count
  */
 class CountUnique(args: Args) extends Job(args) {
 

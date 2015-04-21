@@ -9,12 +9,13 @@ import java.io.{FileWriter, File}
 object Generate100MillionNonUnique extends App {
 
   val filename = "datasets/100MillionNonUnique"
+  val lineSepartor = util.Properties.lineSeparator
   new File(filename).delete()
   val fw = new FileWriter(filename, true)
 
-  // 90 Million uniques
+  // 90 Million unique
   for (i<- 1 to 900) {
-    val chunk = (1 to 100*1000).map(_ => util.Random.nextString (10) ).mkString(util.Properties.lineSeparator )
+    val chunk = (0 to 100*1000).map(_ => util.Random.nextString (10).replace(lineSepartor, " ") ).mkString( lineSepartor )
     fw.write(chunk)
     if (i % 10 == 0) println(s"${i/10} % completed")
   }
@@ -22,7 +23,7 @@ object Generate100MillionNonUnique extends App {
   // 10 Million repeated
   for (i<- 1 to 100) {
     val value = util.Random.nextInt(50)
-    val chunk = (1 to 100*1000).map(_ => (5000000000L - value) ).mkString(util.Properties.lineSeparator )
+    val chunk = (0 to 100*1000).map(_ => (5000000000L - value) ).mkString(lineSepartor)
     fw.write(chunk)
     if (i % 10 == 0) println(s"${(i+90)/10} % completed")
   }

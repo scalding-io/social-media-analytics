@@ -9,11 +9,12 @@ import java.io._
 object Generate100MillionUnique extends App {
 
   val filename = "datasets/100MillionUnique"
+  val lineSepartor = util.Properties.lineSeparator
   new File(filename).delete()
   val fw = new FileWriter(filename, true)
 
   for (i<- 1 to 1000) {
-    val chunk = (1 to 100*1000).map(_ => util.Random.nextString (10) ).mkString(util.Properties.lineSeparator )
+    val chunk = (0 to 100*1000).map(_ => util.Random.nextString (10).replace(lineSepartor, " ") ).mkString( lineSepartor )
     fw.write(chunk)
     if (i % 10 == 0) println(s"${i/10} % completed")
   }
@@ -21,4 +22,3 @@ object Generate100MillionUnique extends App {
   println(s" File $filename generated ")
 
 }
-
