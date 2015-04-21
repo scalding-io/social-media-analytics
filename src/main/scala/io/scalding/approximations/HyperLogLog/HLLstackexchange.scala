@@ -10,7 +10,7 @@ import com.twitter.scalding._
  */
 object StackExchange {
   type StackExchangeType = (Long, Long, Long,Long, String, Long, Long, String,String)
-  def fromTuple(t: StackExchangeType) = StackExchange(t._1, t._2, t._3, t._4, t._5,t._6,t._7,t._8,t._9)
+  def fromTuple(t: StackExchangeType): StackExchange = StackExchange(t._1, t._2, t._3, t._4, t._5,t._6,t._7,t._8,t._9)
 }
 case class StackExchange(ID: Long, PostTypeID: Long, ParentID: Long, OwnerUserID: Long, CreationDate: String,
                 ViewCount: Long, FavoriteCount: Long, Tags: String, Keywords: String)
@@ -30,7 +30,7 @@ class HLLstackexchange(args: Args) extends Job(args) {
   val stackExchangePosts = TypedPipe.from(TypedTsv[StackExchange.StackExchangeType](input))
     .map { StackExchange.fromTuple }
     .aggregate(unique)
-    .map { x => println(s"Cardinality estimation (unique users in stack exchange data) : $x"); x }
+    .map { x => println(s"Unique authors (cardinality estimation in stack exchange data) : $x"); x }
     .write(TypedTsv(output))
 
 }

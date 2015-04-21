@@ -9,19 +9,15 @@ import com.twitter.scalding._
  *
  * @author Antonios Chalkiopoulos - http://scalding.io
  */
-class BFSimpleExample(args:Args) extends Job(args) {
+class BFSimpleExample2(args:Args) extends Job(args) {
 
   implicit val bloomFilterMonoid = BloomFilter(numEntries = 100000 , fpProb = 0.02)
-
-  // BF aggregator
-  val bfAggregator = BloomFilterAggregator
-    .apply(bloomFilterMonoid)
-    .composePrepare[SimpleUser](_.userID)
 
   // Generate and add 100K ids into the (Bloom) filter
   val usersList = (1 to 100000).toList.map{ x => SimpleUser(x.toString) }
   val usersBF = typed.IterablePipe[SimpleUser](usersList, flowDef, mode)
-    .aggregate(bfAggregator)
+    .map { user => bloomFilterMonoid.create(user.userID) }
+    .sum
 
   // Display that BF can be queried
   usersBF
