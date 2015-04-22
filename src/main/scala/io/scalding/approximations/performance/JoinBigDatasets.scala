@@ -5,7 +5,6 @@ import com.twitter.algebird._
 
 /**
  * A Scalding application performing a BloomJoin on two datasets
- *
  */
 class JoinBigDatasetsBF(args: Args) extends Job(args) {
 
@@ -16,20 +15,22 @@ class JoinBigDatasetsBF(args: Args) extends Job(args) {
   // BF aggregator
   val bfAggregator = BloomFilterAggregator
     .apply(BloomFilter(numEntries = 1000*1000 , fpProb = 0.02))
-//    .composePrepare[(String)](_)
-
+    //.composePrepare[(String)](_)
 
   val pipeABF= TypedPipe.from(TextLine(inputA))
     .aggregate(bfAggregator)
 
   val pipeB= TypedPipe.from(TextLine(inputA))
-//    .filterWithValue(pipeABF) { (key, bfOption) =>
-//      bfOption map { _.contains( key.toString ).isTrue } getOrElse false
-//    }
+    .filterWithValue(pipeABF) { (key, bfOption) =>
+      bfOption map { _.contains( key.toString ).isTrue } getOrElse false
+    }
     .write(TypedTsv("peilerA"))
 
 }
 
+/**
+ * A Scalding application performing a join on two datasets
+ */
 class JoinBigDatasets (args: Args) extends Job(args) {
 
   val inputA = args.getOrElse("inputA", "datasets/1MillionUnique")
@@ -43,7 +44,7 @@ class JoinBigDatasets (args: Args) extends Job(args) {
     .map { text => (text, "") } // Convert into (Key,Value) tuple
 
   pipeA.join(pipeB).keys
-    .write(TypedTsv("peiler"))
+    .write(TypedTsv(output))
 
 }
 
