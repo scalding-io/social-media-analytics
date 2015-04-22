@@ -20,7 +20,7 @@ class BFSimpleExample(args:Args) extends Job(args) {
 
   // Generate and add 100K ids into the (Bloom) filter
   val usersList = (1 to 100000).toList.map{ x => SimpleUser(x.toString) }
-  val usersBF = typed.IterablePipe[SimpleUser](usersList, flowDef, mode)
+  val usersBF = typed.IterablePipe[SimpleUser](usersList)
     .aggregate(bfAggregator)
 
   // Display that BF can be queried

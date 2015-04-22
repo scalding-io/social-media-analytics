@@ -3,7 +3,6 @@ package io.scalding.approximations.CMSketch
 import com.twitter.algebird._
 import com.twitter.scalding._
 import com.twitter.scalding.typed.TDsl._
-import cascading.tuple.Fields
 
 /**
  * CMSketch example application: It processes post data from www.stackexchange.com
@@ -18,20 +17,19 @@ import cascading.tuple.Fields
 class CMSstackexchangeTyped(args: Args) extends Job(args) {
 
   // Construct a Count-min Sketch monoid and initialize an empty sketch
-  val eps: Double = 0.01
-  val delta: Double = 0.02
-  val seed: Int = (Math.random()*100).toInt
 
-  implicit val cmsketchMonoid = new CountMinSketchMonoid(eps, delta, seed)
+  import CMSHasherImplicits._
+  implicit val cmsketchMonoid =
+    TopNCMS.monoid[Long](eps=0.01, delta=0.02, seed=(Math.random()*100).toInt, heavyHittersN = 100)
 
   val stackExchangeCMS = TypedTsv[(String,String,String,Long,String,String,String,String,String)](args("input")).read
-    .toTypedPipe[(String,String,String,Long,String,String,String,String,String)](Fields.ALL)
+    .toTypedPipe[(String,String,String,Long,String,String,String,String,String)]('*)
     .map{ case (_,_,_,owner,_,_,_,_,_) => cmsketchMonoid.create(owner) }
     .sum
 
   // Display histogram info from CMS
   stackExchangeCMS
-    .map { cms:CMS =>
+    .map { cms:TopCMS[Long] =>
        println(" + Total count in the CM sketch : " + cms.totalCount)
        println(" + Heavy Hitters : " + cms.heavyHitters.size)
        cms.heavyHitters.foreach( userid => { println("  - User ID : " + userid + " with estimated cardinality : " + cms.frequency(userid).estimate) } )
@@ -41,7 +39,7 @@ class CMSstackexchangeTyped(args: Args) extends Job(args) {
 
   // Serialize the CMS
   stackExchangeCMS
-    .map { cms:CMS => new String(io.scalding.approximations.Utils.serialize(cms)) }
+    .map { cms:TopCMS[Long] => new String(io.scalding.approximations.Utils.serialize(cms)) }
     .write( TypedCsv(args("serialized")) )
 
 }

@@ -23,12 +23,13 @@ class CMSstackexchangeFields(args: Args) extends Job(args) {
   val delta: Double = 0.02
   val seed: Int = (Math.random()*100).toInt
 
-  implicit val cmsketchMonoid = new CountMinSketchMonoid(eps, delta, seed)
+  import CMSHasherImplicits._
+  implicit val cmsketchMonoid = new CMSMonoid[Long](eps, delta, seed)
 
   val stackExchangePosts = Tsv(args("input"),schema).read
     .mapTo('OwnerUserID-> 'cms) { x:Long => cmsketchMonoid.create(x) }
     .groupAll { group =>
-      group.reduce('cms -> 'cms) { (left:CMS,right:CMS) => left ++ right }
+      group.reduce('cms -> 'cms) { (left:CMS[Long],right:CMS[Long]) => left ++ right }
     }
     .write(Tsv(args("output")))
 

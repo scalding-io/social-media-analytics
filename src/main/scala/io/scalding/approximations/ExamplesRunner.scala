@@ -77,8 +77,7 @@ object ExamplesRunner extends App {
   val timerCMS = withTimeCalc("Running Count-Min Sketch on stackexchange dataset") {
     ToolRunner.run(new Configuration, new Tool, (classOf[CMSstackexchangeFields].getName :: "--local" ::
         "--input" :: "datasets/stackexchange/posts.tsv" ::
-        "--output":: "results/CMS-stackexchangeFields.tsv" ::
-        "--serialized" :: "results/BF-StackExchange-serialized.tsv" :: args.toList).toArray)
+        "--output":: "results/CMS-stackexchangeFields.tsv" :: args.toList).toArray)
   }
   println( s"Count-Min Sketch example on `stackexchange` took $timerCMS msec")
 

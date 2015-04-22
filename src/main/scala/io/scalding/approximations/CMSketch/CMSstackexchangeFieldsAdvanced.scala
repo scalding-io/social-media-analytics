@@ -27,8 +27,13 @@ class CMSstackexchangeFieldsAdvanced(args: Args) extends Job(args) {
   val delta: Double = 0.02
   val seed: Int = (Math.random()*100).toInt
 
-  implicit val cmsketchMonoid = new CountMinSketchMonoid(eps, delta, seed)
-  val sketch:Option[CMS] = None
+  import CMSHasherImplicits._
+  implicit val cmsketchMonoid =
+    TopNCMS.monoid[Long](eps=0.01, delta=0.02, seed=(Math.random()*100).toInt, heavyHittersN = 100)
+
+//  implicit val cmsketchMonoid = new CMSMonoid[Long](eps, delta, seed)
+//  implicit val cmsketchMonoid = new CountMinSketchMonoid(eps, delta, seed)
+  val sketch:Option[TopCMS[Long]] = None
 
   val stackExchangePosts = Tsv(inputFiles,schema).read
     .project('OwnerUserID)
@@ -40,7 +45,7 @@ class CMSstackexchangeFieldsAdvanced(args: Args) extends Job(args) {
       group.foldLeft(('OwnerUserID, 'sketch)->('OwnerUserID, 'sketch)) ( (cmsketchMonoid, sketch) ) { cmSketch }
     }
     .discard('OwnerUserID)
-    .map('sketch -> 'sketch) { s: Option[CMS] =>
+    .map('sketch -> 'sketch) { s: Option[TopCMS[Long]] =>
       s match {
         case Some(sk) =>
           println(" + Total count in the CM sketch : " + sk.totalCount)
@@ -55,7 +60,7 @@ class CMSstackexchangeFieldsAdvanced(args: Args) extends Job(args) {
   /*
    * The foldLeft function that accumulates the sketch information over a stream of user IDs
    */
-  def cmSketch(accumulator:(CountMinSketchMonoid,Option[CMS]), curr:(Long, Option[CMS])) : (CountMinSketchMonoid,Option[CMS]) = {
+  def cmSketch(accumulator:(TopNCMSMonoid[Long],Option[TopCMS[Long]]), curr:(Long, Option[TopCMS[Long]])) : (TopNCMSMonoid[Long],Option[TopCMS[Long]]) = {
     // Get the CMS monoid and item from the accumulator and the user id as the first element of the current line
     val (cmsketchMonoid,existingSketch) = accumulator
     val userid = curr._1

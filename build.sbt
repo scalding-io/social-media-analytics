@@ -24,7 +24,7 @@ resolvers := Seq(
 
 val hadoopCoreVersion = "2.5.0-mr1-cdh5.3.1"
 val hadoopVersion = "2.5.0-cdh5.3.1"
-val scaldingVersion = "0.11.2"
+val scaldingVersion = "0.13.1"
 val sl4jVersion = "1.7.7"
 val specs2Version = "2.4.13"
 val scalaTestVersion = "2.2.2"
@@ -35,6 +35,7 @@ libraryDependencies ++= {
     ("com.twitter"           %% "scalding-commons"      % scaldingVersion)    .exclude("org.mortbay.jetty","jetty").exclude("org.mortbay.jetty","jsp-api-2.1").exclude("org.mortbay.jetty","servlet-api-2.5").exclude("commons-beanutils","commons-beanutils").exclude("commons-beanutils","commons-beanutils-core"),
     ("org.apache.hadoop"      % "hadoop-common"         % hadoopVersion)      .excludeAll(ExclusionRule(organization="org.mortbay.jetty"),ExclusionRule(organization="com.sun.jersey"), ExclusionRule("commons-beanutils"), ExclusionRule("commons-configuration"), ExclusionRule("org.slf4j") ).exclude("com.sun.jersey","jersey-server"),
     "org.apache.hadoop"       % "hadoop-core"           % hadoopCoreVersion   excludeAll ExclusionRule("org.slf4j"),
+    "com.twitter"             % "algebird-core_2.10"    % "0.9.0",
     "commons-configuration"   % "commons-configuration" % "1.10",
     "org.slf4j"               % "slf4j-api"             % sl4jVersion,
     "org.slf4j"               % "slf4j-log4j12"         % sl4jVersion,
