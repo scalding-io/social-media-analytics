@@ -27,6 +27,7 @@ class JoinBigDatasetsBF(args: Args) extends Job(args) {
       bfOption map { _.contains( key.toString ).isTrue } getOrElse false
     }
     .map{ x => (x,"") }
+//    .hashJoin()
     .write(TypedTsv(output))
 
 }

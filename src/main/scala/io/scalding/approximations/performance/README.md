@@ -1,28 +1,44 @@
-After generating the Unique datasets, in order to load them into Hive / Impalla tables:
+Performance evaluation of approximation algorithms : HyperLogLog / BloomFilter / CountMinSketch
 
-# COUNT UNIQUE
+# COUNTING CARDINALITY
+
+Generate unique datasets using `GenerateMillionKeys.scala` and push files into HDFS.
+
+The following test were executed **with** and **without HLL** on a Cloudera 5.2.4 Hadoop 
+cluster consisting of 7-nodes with `r3.8xlarge` (each offering 32 CPUs, 244 GB RAM and three 
+1 TB magnetic EBS volumes.
+
+    $ sbt "run-main io.scalding.approximations.performance.GenerateMillionKeys"
+    $ sbt "run-main io.scalding.approximations.performance.GenerateMillionKeyValues"
+    $ hadoop fs -put datasets/* .     
 
 ## Hive
 
 CREATE TABLE unique1M   ( key string ) row format delimited fields terminated by '\t' stored as textfile;
 CREATE TABLE unique10M  ( key string ) row format delimited fields terminated by '\t' stored as textfile;
 CREATE TABLE unique20M  ( key string ) row format delimited fields terminated by '\t' stored as textfile;
+CREATE TABLE unique40M  ( key string ) row format delimited fields terminated by '\t' stored as textfile;
+CREATE TABLE unique80M  ( key string ) row format delimited fields terminated by '\t' stored as textfile;
 CREATE TABLE unique100M ( key string ) row format delimited fields terminated by '\t' stored as textfile;
-CREATE TABLE unique400M ( key string ) row format delimited fields terminated by '\t' stored as textfile;
+CREATE TABLE unique500M ( key string ) row format delimited fields terminated by '\t' stored as textfile;
 
-load data inpath '/tmp/1M/'  into table unique1M;
-load data inpath '/tmp/10M/' into table unique10M;
-load data inpath '/tmp/20M/' into table unique20M;
+load data inpath '/tmp/1M/'   into table unique1M;
+load data inpath '/tmp/10M/'  into table unique10M;
+load data inpath '/tmp/20M/'  into table unique20M;
+load data inpath '/tmp/40M/'  into table unique40M;
+load data inpath '/tmp/80M/'  into table unique80M;
 load data inpath '/tmp/100M/' into table unique100M;
-load data inpath '/tmp/400M/' into table unique400M;
+load data inpath '/tmp/500M/' into table unique500M;
 
 ## Hive Results
 
     select count(distinct key) from unique1M;   # 35 seconds
     select count(distinct key) from unique10M;  # 63 seconds
     select count(distinct key) from unique20M;  # 88 seconds
+    select count(distinct key) from unique40M;  #  seconds
+    select count(distinct key) from unique80M;  #  seconds
     select count(distinct key) from unique100M; # 194 seconds (12/1)
-    select count(distinct key) from unique400M; # 545 seconds (45/1)
+    select count(distinct key) from unique500M; # 545 seconds (45/1)
     
 ## Scalding
 
