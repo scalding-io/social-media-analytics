@@ -24,6 +24,7 @@ object GenerateMillionUnique extends App {
   }
 
   generateUnique("datasets/100MillionUnique",100)
+  generateUnique("datasets/20MillionUnique",20)
   generateUnique("datasets/10MillionUnique",10)
   generateUnique("datasets/1MillionUnique",1)
 
