@@ -5,16 +5,18 @@ import com.twitter.algebird._
 
 /**
  * A Scalding application performing a BloomJoin on two datasets
+ * BF is generated on input A - so A should be the smaller dataset
  */
 class JoinBigDatasetsBF(args: Args) extends Job(args) {
 
   val inputA = args.getOrElse("inputA", "datasets/1MillionUnique")
-  val inputB = args.getOrElse("inputB", "datasets/1MillionUnique")
+  val inputB = args.getOrElse("inputB", "datasets/10MillionUnique")
+  val bfEntries = args.getOrElse("bfsize","1000000").toInt
   val output = args.getOrElse("output", "results/JoinResultBF")
 
   // BF aggregator
   val bfAggregator = BloomFilterAggregator
-    .apply(BloomFilter(numEntries = 1000*1000 , fpProb = 0.02))
+    .apply(BloomFilter(numEntries = bfEntries , fpProb = 0.02))
     //.composePrepare[(String)](_)
 
   val pipeABF= TypedPipe.from(TextLine(inputA))
