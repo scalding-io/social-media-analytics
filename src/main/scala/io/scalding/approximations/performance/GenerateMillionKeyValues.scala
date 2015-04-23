@@ -47,7 +47,9 @@ object GenerateMillionKeyValues extends App {
     // Generate non-unique keys
     for (i <- 1 to millions) {
       val value = util.Random.nextInt(50)
-      val chunk = (0 to 1000 * 10 *(100-percentageUnique)).map(_ => (5000000000L - value)).mkString(lineSepartor)
+      val chunk = (0 to 1000 * 10 *(100-percentageUnique))
+        .map(_ => (5000000000L - value) + "\t" + util.Random.nextString(200).replaceAll("[\\p{C}]"," ") )
+        .mkString(lineSepartor)
       fw.write(chunk)
       println(s"$i million non-UNIQUE keys generated")
     }
@@ -56,18 +58,10 @@ object GenerateMillionKeyValues extends App {
     println(s" File '$filename' generated ")
   }
 
-  generateKeys("datasets/1MillionUnique"  , 1 )
-  generateKeys("datasets/10MillionUnique" ,10 )
-  generateKeys("datasets/20MillionUnique" ,20 )
-  generateKeys("datasets/40MillionUnique" ,40 )
-  generateKeys("datasets/80MillionUnique" ,80 )
-  generateKeys("datasets/100MillionUnique",100)
-  generateKeys("datasets/500MillionUnique",500)
-
-  generateKeys("datasets/1MillionNonUnique"  , 1 , 50)
-  generateKeys("datasets/10MillionNonUnique" ,10 , 50)
-  generateKeys("datasets/20MillionNonUnique" ,20 , 50)
-  generateKeys("datasets/40MillionNonUnique" ,40 , 50)
-  generateKeys("datasets/80MillionNonUnique" ,80 , 50)
+  generateKeyValues("datasets/1Million-KV-Unique"  , 1 )
+  generateKeyValues("datasets/10Million-KV-Unique" ,10 )
+  generateKeyValues("datasets/20Million-KV-Unique" ,20 )
+  generateKeyValues("datasets/40Million-KV-Unique" ,40 )
+  generateKeyValues("datasets/80Million-KV-Unique" ,800 )
 
 }
