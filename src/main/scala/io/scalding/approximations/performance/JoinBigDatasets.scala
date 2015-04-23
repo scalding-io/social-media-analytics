@@ -22,11 +22,12 @@ class JoinBigDatasetsBF(args: Args) extends Job(args) {
   val pipeABF= TypedPipe.from(TextLine(inputA))
     .aggregate(bfAggregator)
 
-  val pipeB= TypedPipe.from(TextLine(inputA))
+  val pipeB= TypedPipe.from(TextLine(inputB))
     .filterWithValue(pipeABF) { (key, bfOption) =>
       bfOption map { _.contains( key.toString ).isTrue } getOrElse false
     }
-    .write(TypedTsv("peilerA"))
+    .map{ x => (x,"") }
+    .write(TypedTsv(output))
 
 }
 

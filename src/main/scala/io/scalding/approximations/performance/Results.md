@@ -39,13 +39,24 @@ hadoop jar Social-Media-Analytics-assembly-1.0.jar com.twitter.scalding.Tool \
 
 The following implicit join notation is supported starting with Hive 0.13.0 
 
-    SELECT * FROM unique1M   t1,  unique10M  t10 WHERE  t1.key ==  t10.key      # 68 sec
-    SELECT * FROM unique10M t10,  unique20M  t20 WHERE t10.key ==  t20.key      # 94 sec
-    SELECT * FROM unique10M t10, unique100M t100 WHERE t10.key == t100.key      # 115 sec       15 map / 4 reduce
-    SELECT * FROM unique20M t20, unique100M t100 WHERE t20.key == t100.key      # 120 sec       16 map / 4 reduce
-    
+    SELECT * FROM unique1M     t1,  unique10M  t10 WHERE  t1.key ==  t10.key      # 68 sec
+    SELECT * FROM unique10M   t10,  unique20M  t20 WHERE t10.key ==  t20.key      # 94 sec
+    SELECT * FROM unique10M   t10, unique100M t100 WHERE t10.key == t100.key      # 115 sec       15 map / 4 reduce
+    SELECT * FROM unique20M   t20, unique100M t100 WHERE t20.key == t100.key      # 120 sec       16 map / 4 reduce
+    SELECT * FROM unique100M t100, unique100M t100a WHERE t100.key == t100a.key   # 275 sec       12 map / 3 reduce
+     
     SELECT * FROM unique1M     t1,  unique1M  t1a WHERE  t1.key ==  t1a.key      # 41  sec
     SELECT * FROM unique10M   t10,  unique10M  t10a WHERE  t10.key ==  t10a.key  # 110 sec
 
+# BF join in Scalding
+
+    JoinBigDatasetsBF           
+    -----------------
+    inputA                  inputB                  m/r         time 
+    1MillionUnique          10MillionUnique         
+    
+    val inputA = args.getOrElse("inputA", "datasets/")
+      val inputB = args.getOrElse("", "")
+      val bfEntries = args.getOrElse("bfsize","1000000").toInt
         
         
