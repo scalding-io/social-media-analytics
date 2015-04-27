@@ -15,7 +15,7 @@ class WikipediaBF(args:Args) extends Job(args) {
   val input  = args.getOrElse("input" ,"datasets/wikipedia/wikipedia-revisions-sample.tsv")
   val serialized = args.getOrElse("serialized","results/wikipedia-authors-BF")
 
-  implicit val bloomFilterMonoid = BloomFilter(numEntries = 5000000 , fpProb = 0.001)
+  val bloomFilterMonoid = BloomFilter(numEntries = 5000000 , fpProb = 0.001)
 
   // BF aggregator
   val bfAggregator = BloomFilterAggregator
