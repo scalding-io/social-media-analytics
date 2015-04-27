@@ -14,54 +14,26 @@ Algebird version = 0.90
 
 ## Hive 0.13 results
 
-|---------------- SQL QUERY -----------------|--Execution Time-|--Size--|--Map--|--Reduce--|
-| select count(distinct key) from unique1M;  |    33 seconds   |  30 MB |   1   |     1    |
-| select count(distinct key) from unique10M; |    63 seconds   | 305 MB |   3   |     1    |
-| select count(distinct key) from unique20M; |    88 seconds   | 610 MB |   4   |     1    |
-| select count(distinct key) from unique40M; |   128 seconds   | 1,2 GB |   6   |     1    |
-| select count(distinct key) from unique80M; |   171 seconds   | 2,4 GB |  10   |     1    |
-| select count(distinct key) from unique100M;|   194 seconds   |   3 GB |  12   |     1    |
-| select count(distinct key) from unique500M;|   833 seconds   | 15,3GB |  57   |     1    |
+|                  SQL QUERY                 |  Execution Time  |  Size  |  Map  |  Reduce  |
+| ------------------------------------------:| ----------------:| ------:| -----:| --------:|
+| select count(distinct key) from unique1M;  |     33 seconds   |  30 MB |   1   |     1    |
+| select count(distinct key) from unique10M; |     63 seconds   | 305 MB |   3   |     1    |
+| select count(distinct key) from unique20M; |     88 seconds   | 610 MB |   4   |     1    |
+| select count(distinct key) from unique40M; |    128 seconds   | 1,2 GB |   6   |     1    |
+| select count(distinct key) from unique80M; |    171 seconds   | 2,4 GB |  10   |     1    |
+| select count(distinct key) from unique100M;|    194 seconds   |   3 GB |  12   |     1    |
+| select count(distinct key) from unique500M;|    833 seconds   | 15,3GB |  57   |     1    |
     
 ## Scalding & Algebird 
 
-|------ Scalding & Algebird ------|--Execution Time-|--Size--|--Map--|--Reduce--|
-|          1MillionUnique         |                      # 35 seconds    ~result~  1,008,018
+|       Scalding & Algebird       |  Execution Time  |  Size  |  Map  |  Reduce  |   Result   |
+| -------------------------------:| ----------------:| ------:| -----:| --------:| ----------:|
+|          1MillionUnique         |     35 seconds   |  30MB  |   1   |    1     |  1,008,018 |
+
     10MillionUnique                             # 44 seconds    ~result~  9,886,778
     20MillionUnique                             # 44 seconds    ~result~ 20,063,847
     100MillionUnique                            # 46 seconds    ~result~ 97,049,737
     500MillionUnique                            # 51 seconds    ~result~ 97,049,737
-
-### Notes
-
-Generate datasets:
-
-    $ sbt "run-main io.scalding.approximations.performance.GenerateMillionKeys"
-    $ sbt "run-main io.scalding.approximations.performance.GenerateMillionKeyValues"
-    $ hadoop fs -put datasets/* .     
-
-Executing Scalding:
-
-    hadoop jar Social-Media-Analytics-assembly-1.0.jar com.twitter.scalding.Tool \
-        io.scalding.approximations.performance.CountUniqueHLL --hdfs --input datasets/1MillionUnique
-
-Executing HIVE:
-
-    CREATE TABLE unique1M   ( key string ) row format delimited fields terminated by '\t' stored as textfile;
-    CREATE TABLE unique10M  ( key string ) row format delimited fields terminated by '\t' stored as textfile;
-    CREATE TABLE unique20M  ( key string ) row format delimited fields terminated by '\t' stored as textfile;
-    CREATE TABLE unique40M  ( key string ) row format delimited fields terminated by '\t' stored as textfile;
-    CREATE TABLE unique80M  ( key string ) row format delimited fields terminated by '\t' stored as textfile;
-    CREATE TABLE unique100M ( key string ) row format delimited fields terminated by '\t' stored as textfile;
-    CREATE TABLE unique500M ( key string ) row format delimited fields terminated by '\t' stored as textfile;
-
-    load data inpath '/tmp/1M/'   into table unique1M;
-    load data inpath '/tmp/10M/'  into table unique10M;
-    load data inpath '/tmp/20M/'  into table unique20M;
-    load data inpath '/tmp/40M/'  into table unique40M;
-    load data inpath '/tmp/80M/'  into table unique80M;
-    load data inpath '/tmp/100M/' into table unique100M;
-    load data inpath '/tmp/500M/' into table unique500M;
 
 # COUNTING Top-N
 
@@ -91,4 +63,34 @@ The following implicit join notation is supported starting with Hive 0.13.0
       val inputB = args.getOrElse("", "")
       val bfEntries = args.getOrElse("bfsize","1000000").toInt
         
-        
+# NOTES
+
+Generate datasets:
+
+    $ sbt clean assembly
+    $ sbt "run-main io.scalding.approximations.performance.GenerateMillionKeys"
+    $ sbt "run-main io.scalding.approximations.performance.GenerateMillionKeyValues"
+    $ hadoop fs -put datasets/* .     
+
+Executing Scalding (Count unique) :
+
+    hadoop jar Social-Media-Analytics-assembly-1.0.jar com.twitter.scalding.Tool \
+        io.scalding.approximations.performance.CountUniqueHLL --hdfs --input datasets/1MillionUnique
+
+Executing HIVE (Count unique):
+
+    CREATE TABLE unique1M   ( key string ) row format delimited fields terminated by '\t' stored as textfile;
+    CREATE TABLE unique10M  ( key string ) row format delimited fields terminated by '\t' stored as textfile;
+    CREATE TABLE unique20M  ( key string ) row format delimited fields terminated by '\t' stored as textfile;
+    CREATE TABLE unique40M  ( key string ) row format delimited fields terminated by '\t' stored as textfile;
+    CREATE TABLE unique80M  ( key string ) row format delimited fields terminated by '\t' stored as textfile;
+    CREATE TABLE unique100M ( key string ) row format delimited fields terminated by '\t' stored as textfile;
+    CREATE TABLE unique500M ( key string ) row format delimited fields terminated by '\t' stored as textfile;
+
+    load data inpath '/tmp/1M/'   into table unique1M;
+    load data inpath '/tmp/10M/'  into table unique10M;
+    load data inpath '/tmp/20M/'  into table unique20M;
+    load data inpath '/tmp/40M/'  into table unique40M;
+    load data inpath '/tmp/80M/'  into table unique80M;
+    load data inpath '/tmp/100M/' into table unique100M;
+    load data inpath '/tmp/500M/' into table unique500M;
