@@ -1,23 +1,19 @@
 Performance evaluation of approximation algorithms HLL (HyperLogLog), BF (BloomFilter), CMS (CountMinSketch) 
 using Hive and Scalding & algebird.
 
-Setup
-
-A Cloudera 5.2.4 Hadoop cluster consisting of 7 `r3.8xlarge` amazon nodes using
- + Hive version = 0.13.1-cdh5.2.4
- + Scalding version = 0.13.1
- + Algebird version = 0.90
-Each node on the cluster offering: 
-, each offering:
+The setup is a Cloudera 5.2.4 Hadoop cluster consisting of 7 `r3.8xlarge` amazon nodes, each offering:
  + 32 CPUs
  + 244 GB RAM
  + 3 * 1 TeraByte magnetic EBS volumes
 
+The technologies evaluated are:
+ + Hive version = 0.13.1-cdh5.2.4
+ + Scalding version = 0.13.1
+ + Algebird version = 0.90
+
 # COUNTING CARDINALITY
 
-Generate unique datasets using `GenerateMillionKeys.scala` and push files into HDFS.
-
-The following test were executed **with** and **without HLL** 
+This test is executed on synthetic data generated using [GenerateMillionKeys.scala](GenerateMillionKeys.scala) and pushed into HDFS. It demonstrates Hive execution time vs algebird's HLL. 
 
 ## Hive 0.13 results
 
@@ -30,7 +26,7 @@ The following test were executed **with** and **without HLL**
 | select count(distinct key) from unique80M; | 2,4 GB |  10   |     1    |    171 seconds   | 
 | select count(distinct key) from unique100M;|   3 GB |  12   |     1    |    194 seconds   |   
 | select count(distinct key) from unique500M;| 15,3GB |  57   |     1    |    833 seconds   |
-    
+
 ## Scalding & Algebird 
 
 |       Scalding & Algebird       |  Size  |  Map  |  Reduce  | Result 2% error  | Result 0.1% error | Execution Time | 
@@ -43,11 +39,13 @@ The following test were executed **with** and **without HLL**
 |        100MillionUnique         |   3GB  |  23   |    1     |       99,707,828 |       100,185,762 |   46 seconds   |
 |        500MillionUnique         | 15,3GB | 114   |    1     |      495,467,613 |       500,631,225 |   52 seconds   |
 
-The above measurements are with using 12-bits [ Where error rate is : 1.04 / sqrt (2^{bits}) ] ~ 1.6 % 
-By using 20-bits the expected error rate is ~ 0.1 % The execution time when running with 20-bits instead of 12-bits 
-increased marginally by 1 to 2 seconds.
- 
+The above measurements are with using *12-bits* [ Where error rate is : 1.04 / sqrt (2^{bits}) ] ~ 1.6 % 
+By using *20-bits* the average error rate is ~ 0.1 % and the execution time increases marginally by 1-2 seconds.
+
 # COUNTING Top-N
+
+In this test, we will be calculating the frequency of the top-100 Wikipedia authors - using a ~ [20 GByte](../../../../../datasets/wikipedia/README.md) Wikipedia dataset, containing more than 400 M lines
+(403,802,472 lines) and 5,686,427 unique authors
 
 ## Hive 0.13 results
 
@@ -57,11 +55,7 @@ increased marginally by 1 to 2 seconds.
 | ... LIMIT 100 | 74 Map - 19 Reduce - 4 Map - 1 Reduce |  77 seconds |
 | ... LIMIT 100 | 74 Map - 19 Reduce - 4 Map - 1 Reduce |  77 seconds |
 
-
 ## Scalding & Algebird
-
-Counting the top-100 Wikipedia authors - using a ~ 20 GByte Wikipedia dataset, containing more than 400 M lines
-(403,802,472 lines)
 
 |       Scalding & Algebird       |    Execution Plan  | Execution Time |
 | -------------------------------:| ------------------:| --------------:|
