@@ -137,7 +137,14 @@ CMS (Count-Min-Sketch) offers the benefits:
 + Requires significantly small memory
 + Allows us to calculate 10s or even 100nds of histograms on a data set on a single pass
 
-# JOINING DATASETS
+# USING BLOOM FILTERS
+
+Look-ups can be **very** expensive at times. For example the following lookup takes 23 seconds to be executed - while 
+it is using 74 JVMs on our cluster. 
+
+    SELECT * FROM wikipedia WHERE ContributorID == 123456789;
+
+# 
 
 The following implicit join notation is supported starting with Hive 0.13.0 
 
