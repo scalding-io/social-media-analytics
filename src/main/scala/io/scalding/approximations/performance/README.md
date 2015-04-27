@@ -57,18 +57,11 @@ In this test, we will calculate the frequency table of the top-100 Wikipedia aut
 
 ## Hive 0.13 results
 
-
-| | |
-|-|-|
-| HIVE Query     | SELECT ContributorID, COUNT(ContributorID) AS CC  FROM wikipedia GROUP BY ContributorID ORDER BY CC DESC LIMIT 10 | 
-| Execution Plan | 74 Map - 19 Reduce - 4 Map - 1 Reduce |
+|   |   |
+|:--:|:--|
+| HIVE Query     | `SELECT ContributorID, COUNT(ContributorID) AS CC  FROM wikipedia GROUP BY ContributorID ORDER BY CC DESC LIMIT 100` | 
 | Execution Time | 77 seconds |
-
-|            HIVE Query           | Execution Plan | Execution Time | 
-|:-------------------------------:| --------------:| --------------:| 
-| SELECT ContributorID, COUNT(ContributorID) AS CC  FROM wikipedia GROUP BY ContributorID ORDER BY CC DESC LIMIT 10 | 74 Map - 19 Reduce - 4 Map - 1 Reduce |  77 seconds |
-| ... LIMIT 100 | 74 Map - 19 Reduce - 4 Map - 1 Reduce |  77 seconds |
-| ... LIMIT 100 | 74 Map - 19 Reduce - 4 Map - 1 Reduce |  77 seconds |
+| Execution Plan | 74 Map - 19 Reduce - 4 Map - 1 Reduce |
 
 ## Scalding & Algebird
 
