@@ -57,7 +57,7 @@ In this test, we will calculate the frequency table of the top-100 Wikipedia aut
 
 Next, we will calculate the highest number of wikipedia edits / per second 
 
-## Experiment A 
+## Experiment - TopN on 5 million unique elements 
 
 Getting the top-100 authors 
 
@@ -77,7 +77,7 @@ Getting the top-100 authors
 |       Wikipedia Top 100         | 148 Map - 1 Reduce |   72 seconds   |
 |       Wikipedia Top 1000        | 148 Map - 1 Reduce |   73 seconds   |
 
-## Experiment B
+## Experiment - TopN on 200 million unique elements
 
 To simulate a larger experiment we will now calculate the histogram of the seconds with the highest writes/seconds
 
@@ -95,15 +95,48 @@ To simulate a larger experiment we will now calculate the histogram of the secon
 | -------------------------------:| ------------------:| --------------:|
 |    Wikipedia Top 100 seconds    | 148 Map - 1 Reduce |   78 seconds   |  
 
-## Experiment C
+### Results
+
+The results extracted are looking like this:
+
+| Rank |        DateTime       | Count |
+| ----:| ---------------------:| -----:|
+|  0   | 2002-02-25T15:51:15Z  | 19491 |
+|  1   | 2002-02-25T15:43:11Z  | 15153 |
+|  2   | 2004-05-29T06:20:10Z  |   154 |
+|  3   | 2004-06-02T08:06:20Z  |   149 |
+|  4   | 2008-01-03T17:06:00Z  |   143 |
+|  5   | 2008-01-03T17:09:29Z  |   136 |
+
+## Experiment - Multiple Histograms on a single pass
 
 To simulate how Scalding and algebird aggregations become increasingly important, as they offer the capability to calculate
-multiple histograms on a single pass, we will 
+multiple histograms on a single pass, we will calculate with scalding:
 
++ Frequency of Top-10 seconds regarding writes/seconds
++ Frequency of Top-100 authors
++ Frequency of Top-12 months
++ Frequency of Top-24 hours
+
+in a single pass by executing:
+
+    hadoop jar Social-Media-Analytics-assembly-1.0.jar com.twitter.scalding.Tool \
+      io.scalding.approximations.CountMinSketch.WikipediaHistograms --hdfs \
+      --input datasets/wikipedia/wikipedia-revisions
+
+|     Scalding & Algebird     |    Execution Plan  | Execution Time |
+| ---------------------------:| ------------------:| --------------:|
+|  4 Histograms on Wikipedia  | 148 Map - 1 Reduce |  139 seconds   |  
 
 ## Conclusions
 
-CMS (Count-Min-Sketch) 
+CMS (Count-Min-Sketch) offers the benefits:
+
++ As a monoid allows a single reducer to aggregate intermediate results - making it ideal for streaming application
++ Is performant once we are calculating histograms with 10s of Millions of unique items or more
++ Requires significantly small memory
++ Allows us to calculate 10s or even 100nds of histograms on a data set on a single pass
+
 # JOINING DATASETS
 
 The following implicit join notation is supported starting with Hive 0.13.0 
