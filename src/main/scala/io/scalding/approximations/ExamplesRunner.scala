@@ -1,9 +1,11 @@
 package io.scalding.approximations
 
 import com.twitter.scalding.Tool
+import io.scalding.approximations.CountMinSketch.fields.CMSstackexchangeFields
 import io.scalding.approximations.HyperLogLog._
 import io.scalding.approximations.BloomFilter._
-import io.scalding.approximations.CMSketch._
+import io.scalding.approximations.CountMinSketch._
+import io.scalding.approximations.HyperLogLog.fields.HLLwikipedia
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.util.ToolRunner
 

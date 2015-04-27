@@ -1,17 +1,18 @@
-package io.scalding.approximations.HyperLogLog
+package io.scalding.approximations.HyperLogLog.fields
 
 import cascading.pipe.Pipe
 import com.twitter.algebird.DenseHLL
 import com.twitter.scalding._
 
 /**
- * Counting the number of unique contributors in the wikipedia data-set
+ * Counting the number of unique users in the stack exchange data-set using the Scalding Fields API
+ *
  * @author Antonios.Chalkiopoulos - http://scalding.io
  */
-class HLLwikipedia(args: Args) extends Job(args) {
+class HLLstackexchangeFields(args: Args) extends Job(args) {
 
   // The input schema of our data-set
-  val schema = List('ContributorID, 'ContributorUserName, 'RevisionID, 'DateTime)
+  val schema = List('ID, 'PostTypeID, 'ParentID, 'OwnerUserID, 'CreationDate, 'ViewCount, 'FavoriteCount, 'Tags, 'Keywords)
 
   // Take in as arguments the location of the input/output files
   val inputFiles = args("input")
@@ -27,18 +28,17 @@ class HLLwikipedia(args: Args) extends Job(args) {
       pipe.mapTo( symbol -> symbol ) {
         hll: DenseHLL =>
           val estimation = hll.approximateSize.estimate
-          println(s"Cardinality estimation of ($name) set : $estimation with $inaccuracy % estimation error")
+          println(s"$name cardinality estimation: $estimation with $inaccuracy % error")
           hll
       }
 
-  val wikipediaPosts = Tsv(inputFiles,schema).read
-    .project('ContributorID)
-    
+  val stackExchangePosts = Tsv(inputFiles,schema).read
+    .project('OwnerUserID)
     .groupAll { group =>
-       group.hyperLogLog[Long]('ContributorID ->'denseHHL , inaccuracy)
+       group.hyperLogLog[Long]('OwnerUserID ->'denseHHL , inaccuracy)
     }
 
-   printSizeOfHLL(wikipediaPosts, 'denseHHL, "wikipedia")
+   printSizeOfHLL(stackExchangePosts, 'denseHHL, "stackexchange")
      .write(TextLine(outputFile))
 
  }

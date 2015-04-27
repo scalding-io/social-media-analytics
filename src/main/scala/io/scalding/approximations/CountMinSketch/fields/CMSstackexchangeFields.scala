@@ -1,4 +1,4 @@
-package io.scalding.approximations.CMSketch
+package io.scalding.approximations.CountMinSketch.fields
 
 import com.twitter.algebird._
 import com.twitter.scalding._

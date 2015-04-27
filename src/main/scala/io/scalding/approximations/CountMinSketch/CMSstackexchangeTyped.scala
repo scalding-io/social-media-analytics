@@ -1,4 +1,4 @@
-package io.scalding.approximations.CMSketch
+package io.scalding.approximations.CountMinSketch
 
 import com.twitter.algebird._
 import com.twitter.scalding._
@@ -17,7 +17,6 @@ import com.twitter.scalding.typed.TDsl._
 class CMSstackexchangeTyped(args: Args) extends Job(args) {
 
   // Construct a Count-min Sketch monoid and initialize an empty sketch
-
   import CMSHasherImplicits._
   implicit val cmsketchMonoid =
     TopNCMS.monoid[Long](eps=0.01, delta=0.02, seed=(Math.random()*100).toInt, heavyHittersN = 100)

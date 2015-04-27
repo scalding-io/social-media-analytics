@@ -1,4 +1,4 @@
-package io.scalding.approximations.HyperLogLog
+package io.scalding.approximations.HyperLogLog.fields
 
 import cascading.pipe.Pipe
 import com.twitter.algebird.{DenseHLL, HLL}
