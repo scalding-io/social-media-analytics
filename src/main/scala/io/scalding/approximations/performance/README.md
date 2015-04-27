@@ -55,7 +55,13 @@ In this test, we will calculate the frequency table of the top-100 Wikipedia aut
 [20 GByte](../../../../../../../datasets/wikipedia/README.md) Wikipedia dataset, containing more than 
 400 M lines (403,802,472 lines) with 5,686,427 unique authors
 
-## Hive 0.13 results
+Next, we will calculate the highest number of wikipedia edits / per second 
+
+## Experiment A 
+
+Getting the top-100 authors 
+
+### Hive 0.13 results
 
 |   |   |
 |:--:|:--|
@@ -63,7 +69,7 @@ In this test, we will calculate the frequency table of the top-100 Wikipedia aut
 | Execution Time | 77 seconds |
 | Execution Plan | 74 Map - 19 Reduce - 4 Map - 1 Reduce |
 
-## Scalding & Algebird
+### Scalding & Algebird
 
 |       Scalding & Algebird       |    Execution Plan  | Execution Time |
 | -------------------------------:| ------------------:| --------------:|
@@ -71,6 +77,33 @@ In this test, we will calculate the frequency table of the top-100 Wikipedia aut
 |       Wikipedia Top 100         | 148 Map - 1 Reduce |   72 seconds   |
 |       Wikipedia Top 1000        | 148 Map - 1 Reduce |   73 seconds   |
 
+## Experiment B
+
+To simulate a larger experiment we will now calculate the histogram of the seconds with the highest writes/seconds
+
+### Hive 0.13 results
+
+|   |   |
+|:--:|:--|
+| HIVE Query     | `SELECT DateTime, COUNT(DateTime) AS CC FROM wikipedia GROUP BY DateTime ORDER BY CC DESC LIMIT 100` | 
+| Execution Time | 230 seconds |
+| Execution Plan | 74 Map - 19 Reduce - 4 Map - 1 Reduce |
+
+### Scalding & Algebird
+
+|       Scalding & Algebird       |    Execution Plan  | Execution Time |
+| -------------------------------:| ------------------:| --------------:|
+|    Wikipedia Top 100 seconds    | 148 Map - 1 Reduce |   78 seconds   |  
+
+## Experiment C
+
+To simulate how Scalding and algebird aggregations become increasingly important, as they offer the capability to calculate
+multiple histograms on a single pass, we will 
+
+
+## Conclusions
+
+CMS (Count-Min-Sketch) 
 # JOINING DATASETS
 
 The following implicit join notation is supported starting with Hive 0.13.0 
