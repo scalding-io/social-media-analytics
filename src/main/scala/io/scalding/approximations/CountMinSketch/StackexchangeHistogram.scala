@@ -14,7 +14,7 @@ import com.twitter.scalding.typed.TDsl._
  *
  * @author Antonios.Chalkiopoulos - http://scalding.io
  */
-class CMSstackexchangeTyped(args: Args) extends Job(args) {
+class StackexchangeHistogram(args: Args) extends Job(args) {
 
   // Construct a Count-min Sketch monoid and initialize an empty sketch
   import CMSHasherImplicits._

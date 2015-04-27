@@ -30,7 +30,7 @@ object ExamplesRunner extends App {
 
   val stackExchangePosts = "datasets/stackexchange/posts.tsv"
   val stackexchangeHLL = withTimeCalc("Running HLL cardinality count on stackexchange data-set") {
-    ToolRunner.run(new Configuration, new Tool, (classOf[HLLstackexchange].getName ::
+    ToolRunner.run(new Configuration, new Tool, (classOf[StackexchangeHLL].getName ::
       List("--local","--input",stackExchangePosts,"--output","results/HLL-stackexchange")).toArray)
   }
   println(s"Running HLL took $timerHLL msec")
@@ -85,7 +85,7 @@ object ExamplesRunner extends App {
   println( s"Count-Min Sketch example on `stackexchange` took $timerCMS msec")
 
   val timerCMSstackexchangeTyped = withTimeCalc("Running Count-Min Sketch on stackexchange dataset") {
-    ToolRunner.run(new Configuration, new Tool, (classOf[CMSstackexchangeTyped].getName :: "--local" ::
+    ToolRunner.run(new Configuration, new Tool, (classOf[StackexchangeHistogram].getName :: "--local" ::
       "--input" :: "datasets/stackexchange/posts.tsv" ::
       "--output":: "results/CMS-stackexchangeTyped.tsv" ::
       "--serialized" :: "results/CMS-stackexchangeTyped-serialized.tsv" :: args.toList).toArray)

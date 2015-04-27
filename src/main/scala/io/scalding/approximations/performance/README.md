@@ -1,16 +1,23 @@
-Performance evaluation of approximation algorithms : HyperLogLog / BloomFilter / CountMinSketch
+Performance evaluation of approximation algorithms HLL (HyperLogLog), BF (BloomFilter), CMS (CountMinSketch) 
+using Hive and Scalding & algebird.
+
+Setup
+
+A Cloudera 5.2.4 Hadoop cluster consisting of 7 `r3.8xlarge` amazon nodes using
+ + Hive version = 0.13.1-cdh5.2.4
+ + Scalding version = 0.13.1
+ + Algebird version = 0.90
+Each node on the cluster offering: 
+, each offering:
+ + 32 CPUs
+ + 244 GB RAM
+ + 3 * 1 TeraByte magnetic EBS volumes
 
 # COUNTING CARDINALITY
 
 Generate unique datasets using `GenerateMillionKeys.scala` and push files into HDFS.
 
-The following test were executed **with** and **without HLL** on a Cloudera 5.2.4 Hadoop 
-cluster consisting of 7-nodes with `r3.8xlarge` (each offering 32 CPUs, 244 GB RAM and three 
-1 TB magnetic EBS volumes.
-
-Hive version = 0.13.1-cdh5.2.4
-Scalding version = 0.13.1
-Algebird version = 0.90
+The following test were executed **with** and **without HLL** 
 
 ## Hive 0.13 results
 
@@ -42,9 +49,25 @@ increased marginally by 1 to 2 seconds.
  
 # COUNTING Top-N
 
+## Hive 0.13 results
+
+|            HIVE Query           | Execution Plan | Execution Time | 
+|:-------------------------------:| --------------:| --------------:| 
+| SELECT ContributorID, COUNT(ContributorID) AS CC  FROM wikipedia GROUP BY ContributorID ORDER BY CC DESC LIMIT 10 | 74 Map - 19 Reduce - 4 Map - 1 Reduce |  77 seconds |
+| ... LIMIT 100 | 74 Map - 19 Reduce - 4 Map - 1 Reduce |  77 seconds |
+| ... LIMIT 100 | 74 Map - 19 Reduce - 4 Map - 1 Reduce |  77 seconds |
+
+
+## Scalding & Algebird
+
 Counting the top-100 Wikipedia authors - using a ~ 20 GByte Wikipedia dataset, containing more than 400 M lines
 (403,802,472 lines)
 
+|       Scalding & Algebird       |    Execution Plan  | Execution Time |
+| -------------------------------:| ------------------:| --------------:|
+|       Wikipedia Top 10          | 148 Map - 1 Reduce |   67 seconds   |  
+|       Wikipedia Top 100         | 148 Map - 1 Reduce |   72 seconds   |
+|       Wikipedia Top 1000        | 148 Map - 1 Reduce |   73 seconds   |
 
 # JOINING DATASETS
 
@@ -109,7 +132,51 @@ Executing HIVE (Count unique):
     load data inpath '/tmp/100M/' into table unique100M;
     load data inpath '/tmp/500M/' into table unique500M;
     
-Executing Scalding (Top-100 Wikipedia) :
+Executing Scalding (Top-10 Wikipedia):
     
     hadoop jar Social-Media-Analytics-assembly-1.0.jar com.twitter.scalding.Tool \
-        io.scalding.approximations.CountMinSketch.WikipediaTopN --hdfs --input datasets/wikipedia/wikipedia-revisions
+        io.scalding.approximations.CountMinSketch.WikipediaTopN --hdfs --input datasets/wikipedia/wikipedia-revisions --topN 10
+
+Executing HIVE (Top-10 Wikipedia):
+
+    CREATE TABLE wikipedia ( ContributorID INT, ContributorUserName STRING, RevisionID INT, DateTime STRING) row format delimited fields terminated by '\t' stored as textfile;
+    load data inpath '/tmp/wikipedia/' into table wikipedia;
+
+    select count(distinct ContributorID) from wikipedia;  # 74 Mappers - 1 Reducer #  Time: 66 seconds # Result = 5,686,427
+ 
+    SELECT ContributorID, COUNT(ContributorID) AS CC 
+    FROM wikipedia
+    GROUP BY ContributorID
+    ORDER BY CC DESC
+    # 74 Map - 19 Reducer # 4 Map - 1 Reducer # Time: 82 seconds
+
+    SELECT ContributorID, COUNT(ContributorID) AS CC 
+    FROM wikipedia
+    GROUP BY ContributorID
+    ORDER BY CC DESC
+    LIMIT 10
+    # 74 Map - 19 Reducer - 4 Map - 1 Reducer # Time: 82 seconds
+
+
+        Rank ContributorID  Count
+         0	3455093	3762147
+         1	1215485	3736115
+         2	433328	3445761
+         3	7328338	3107727
+         4	6569922	2811455
+         5	13286072	2294332
+         6	4936590	1597294
+         7	11292982	1577598
+         8	4928500	1544177
+         9	10996774	1447324
+         10	205121	1281580
+         11	7611264	1129643
+         12	8066546	983709
+         13	279219	965345
+         14	82835	964309
+         15	7320905	923242
+        
+    SELECT TOP 10 ContributorID, COUNT(ContributorID) AS Count
+    FROM wikipedia
+    GROUP BY ContributorID
+    ORDER BY COUNT(ContributorID) DESC

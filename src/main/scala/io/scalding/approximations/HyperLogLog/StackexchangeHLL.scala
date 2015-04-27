@@ -2,20 +2,14 @@ package io.scalding.approximations.HyperLogLog
 
 import com.twitter.algebird._
 import com.twitter.scalding._
+import io.scalding.approximations.model.StackExchange
 
 /**
  * Counting the number of unique users in the stack exchange data-set using the Typed API
  *
  * @author Antonios.Chalkiopoulos - http://scalding.io
  */
-object StackExchange {
-  type StackExchangeType = (Long, Long, Long,Long, String, Long, Long, String,String)
-  def fromTuple(t: StackExchangeType): StackExchange = StackExchange(t._1, t._2, t._3, t._4, t._5,t._6,t._7,t._8,t._9)
-}
-case class StackExchange(ID: Long, PostTypeID: Long, ParentID: Long, OwnerUserID: Long, CreationDate: String,
-                ViewCount: Long, FavoriteCount: Long, Tags: String, Keywords: String)
-
-class HLLstackexchange(args: Args) extends Job(args) {
+class StackexchangeHLL(args: Args) extends Job(args) {
 
   val input  = args.getOrElse("input" ,"datasets/stackexchange/posts.tsv")
   val output = args.getOrElse("output","results/HLL-stackexchange")

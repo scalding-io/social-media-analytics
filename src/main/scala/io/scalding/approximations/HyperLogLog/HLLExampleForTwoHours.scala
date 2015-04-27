@@ -13,9 +13,10 @@ import com.twitter.scalding._
  *
  * @author Antonios Chalkiopoulos - http://scalding.io
  */
-case class Users(userID: Int)
 
 class HLLExampleForTwoHours(args: Args) extends Job(args) {
+
+  case class Users(userID: Int)
 
   // HLL Error is about 1.04/sqrt(2^{bits}), so you want something like 12 bits for ~2% error
   // which means each HLLInstance is about 2^{12} = 4kb per instance.

@@ -1,4 +1,4 @@
-package io.scalding.approximations.CountMinSketch
+package io.scalding.approximations.model
 
 object Wikipedia {
   type WikipediaType = (Long, String, Long ,String)
