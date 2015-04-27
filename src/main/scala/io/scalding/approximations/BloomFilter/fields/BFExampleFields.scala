@@ -1,7 +1,7 @@
-package io.scalding.approximations.BloomFilter
+package io.scalding.approximations.BloomFilter.fields
 
-import com.twitter.scalding._
 import com.twitter.algebird._
+import com.twitter.scalding._
 
 /**
  * Scalding example of building a Bloom Filter using the Fields API

@@ -14,30 +14,37 @@ Algebird version = 0.90
 
 ## Hive 0.13 results
 
-|                  SQL QUERY                 |  Execution Time  |  Size  |  Map  |  Reduce  |
-| ------------------------------------------:| ----------------:| ------:| -----:| --------:|
-| select count(distinct key) from unique1M;  |     33 seconds   |  30 MB |   1   |     1    |
-| select count(distinct key) from unique10M; |     63 seconds   | 305 MB |   3   |     1    |
-| select count(distinct key) from unique20M; |     88 seconds   | 610 MB |   4   |     1    |
-| select count(distinct key) from unique40M; |    128 seconds   | 1,2 GB |   6   |     1    |
-| select count(distinct key) from unique80M; |    171 seconds   | 2,4 GB |  10   |     1    |
-| select count(distinct key) from unique100M;|    194 seconds   |   3 GB |  12   |     1    |
-| select count(distinct key) from unique500M;|    833 seconds   | 15,3GB |  57   |     1    |
+|                  SQL QUERY                 |  Size  |  Map  |  Reduce  | Execution Time   |
+| ------------------------------------------:| ------:| -----:| --------:| ----------------:|
+| select count(distinct key) from unique1M;  |  30 MB |   1   |     1    |     33 seconds   |  
+| select count(distinct key) from unique10M; | 305 MB |   3   |     1    |     63 seconds   |
+| select count(distinct key) from unique20M; | 610 MB |   4   |     1    |     88 seconds   | 
+| select count(distinct key) from unique40M; | 1,2 GB |   6   |     1    |    128 seconds   | 
+| select count(distinct key) from unique80M; | 2,4 GB |  10   |     1    |    171 seconds   | 
+| select count(distinct key) from unique100M;|   3 GB |  12   |     1    |    194 seconds   |   
+| select count(distinct key) from unique500M;| 15,3GB |  57   |     1    |    833 seconds   |
     
 ## Scalding & Algebird 
 
-|       Scalding & Algebird       |  Execution Time  |  Size  |  Map  |  Reduce  |   Result   |
-| -------------------------------:| ----------------:| ------:| -----:| --------:| ----------:|
-|          1MillionUnique         |     35 seconds   |  30MB  |   1   |    1     |  1,008,018 |
+|       Scalding & Algebird       |  Size  |  Map  |  Reduce  | Result 2% error  | Result 0.1% error | Execution Time | 
+| -------------------------------:| ------:| -----:| --------:| ----------------:|------------------:|---------------:|
+|          1MillionUnique         |  30MB  |   2   |    1     |        1,008,018 |         1,000,467 |   35 seconds   |
+|         10MillionUnique         | 305MB  |   3   |    1     |        9,886,778 |         9,975,311 |   44 seconds   |
+|         20MillionUnique         | 610MB  |   5   |    1     |       20,063,847 |        19,985,528 |   44 seconds   |
+|         40MillionUnique         | 1,2GB  |  10   |    1     |       41,139,911 |        40,031,523 |   45 seconds   |
+|         80MillionUnique         | 2,4GB  |  19   |    1     |       80,418,271 |        79,839,965 |   46 seconds   |
+|        100MillionUnique         |   3GB  |  23   |    1     |       99,707,828 |       100,185,762 |   46 seconds   |
+|        500MillionUnique         | 15,3GB | 114   |    1     |      495,467,613 |       500,631,225 |   52 seconds   |
 
-    10MillionUnique                             # 44 seconds    ~result~  9,886,778
-    20MillionUnique                             # 44 seconds    ~result~ 20,063,847
-    100MillionUnique                            # 46 seconds    ~result~ 97,049,737
-    500MillionUnique                            # 51 seconds    ~result~ 97,049,737
-
+The above measurements are with using 12-bits [ Where error rate is : 1.04 / sqrt (2^{bits}) ] ~ 1.6 % 
+By using 20-bits the expected error rate is ~ 0.1 % The execution time when running with 20-bits instead of 12-bits 
+increased marginally by 1 to 2 seconds.
+ 
 # COUNTING Top-N
 
-Counting the top-100 Wikipedia authors - using the dataset on a dataset 
+Counting the top-100 Wikipedia authors - using a ~ 20 GByte Wikipedia dataset, containing more than 400 M lines
+(403,802,472 lines)
+
 
 # JOINING DATASETS
 
@@ -65,13 +72,20 @@ The following implicit join notation is supported starting with Hive 0.13.0
         
 # NOTES
 
-Generate datasets:
+Generate data-sets:
 
     $ sbt clean assembly
     $ sbt "run-main io.scalding.approximations.performance.GenerateMillionKeys"
     $ sbt "run-main io.scalding.approximations.performance.GenerateMillionKeyValues"
+    $ hadoop fs -mkdir datasets/
     $ hadoop fs -put datasets/* .     
 
+Adding wikipedia dataset:
+
+    $ wget --no-check-certificate http://tinyurl.com/n2lbe69 -O wikipedia-revisions.gz
+    $ gunzip wikipedia-revisions.gz
+    $ hadoop fs -put wikipedia-revisions datasets/
+     
 Executing Scalding (Count unique) :
 
     hadoop jar Social-Media-Analytics-assembly-1.0.jar com.twitter.scalding.Tool \
@@ -94,3 +108,8 @@ Executing HIVE (Count unique):
     load data inpath '/tmp/80M/'  into table unique80M;
     load data inpath '/tmp/100M/' into table unique100M;
     load data inpath '/tmp/500M/' into table unique500M;
+    
+Executing Scalding (Top-100 Wikipedia) :
+    
+    hadoop jar Social-Media-Analytics-assembly-1.0.jar com.twitter.scalding.Tool \
+        io.scalding.approximations.CountMinSketch.WikipediaTopN --hdfs --input datasets/wikipedia/wikipedia-revisions

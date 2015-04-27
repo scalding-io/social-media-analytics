@@ -1,6 +1,7 @@
 package io.scalding.approximations
 
 import com.twitter.scalding.Tool
+import io.scalding.approximations.BloomFilter.fields.BFExampleFields
 import io.scalding.approximations.CountMinSketch.fields.CMSstackexchangeFields
 import io.scalding.approximations.HyperLogLog._
 import io.scalding.approximations.BloomFilter._

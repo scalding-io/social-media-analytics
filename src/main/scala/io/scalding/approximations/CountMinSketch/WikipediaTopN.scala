@@ -10,15 +10,16 @@ import com.twitter.scalding._
  *
  * @author Antonios.Chalkiopoulos - http://scalding.io
  */
-class TopN(args: Args) extends Job(args) {
+class WikipediaTopN(args: Args) extends Job(args) {
 
   val input  = args.getOrElse("input" ,"datasets/wikipedia/wikipedia-revisions-sample.tsv")
   val output = args.getOrElse("output","results/wikipedia-Top100")
+  val topN   = args.getOrElse("topN","100").toInt
 
   // Construct a Count-Min Sketch monoid and bring in helping implicit conversions
   import CMSHasherImplicits._
   implicit val cmsMonoid: TopNCMSMonoid[Long] =
-    TopNCMS.monoid[Long](eps=0.01, delta=0.02, seed=(Math.random()*100).toInt, heavyHittersN = 100)
+    TopNCMS.monoid[Long](eps=0.01, delta=0.02, seed=(Math.random()*100).toInt, heavyHittersN = topN)
 
   val topNaggregator = TopNCMSAggregator(cmsMonoid)
     .composePrepare[Wikipedia](_.ContributorID)
@@ -26,14 +27,6 @@ class TopN(args: Args) extends Job(args) {
   val wikiData = TypedPipe.from(TypedTsv[Wikipedia.WikipediaType](input))
     .map { Wikipedia.fromTuple }
     .aggregate(topNaggregator)
-    .map{ x =>
-//      println("a " + x.)
-      println("peiler" + x)
-
-    //      println(x.frequency
-      x
-    }
-    .debug
     .write(TypedTsv(output))
 
 }
