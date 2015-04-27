@@ -1,5 +1,5 @@
-Performance evaluation of approximation algorithms HLL (HyperLogLog), BF (BloomFilter), CMS (CountMinSketch) 
-using Hive and Scalding & algebird.
+Performance evaluation of approximation algorithms *HLL* (HyperLogLog), *BF* (BloomFilter), *CMS* (CountMinSketch) 
+using [Scalding](https://github.com/twitter/scalding) & [algebird](https://github.com/twitter/algebird/) versus Hive
 
 The setup is a Cloudera 5.2.4 Hadoop cluster consisting of 7 `r3.8xlarge` amazon nodes, each offering:
  + 32 CPUs
@@ -7,13 +7,15 @@ The setup is a Cloudera 5.2.4 Hadoop cluster consisting of 7 `r3.8xlarge` amazon
  + 3 * 1 TeraByte magnetic EBS volumes
 
 The technologies evaluated are:
- + Hive version = 0.13.1-cdh5.2.4
  + Scalding version = 0.13.1
  + Algebird version = 0.90
+ + Hive version = 0.13.1-cdh5.2.4
 
 # COUNTING CARDINALITY
 
-This test is executed on synthetic data generated using [GenerateMillionKeys.scala](GenerateMillionKeys.scala) and pushed into HDFS. It demonstrates Hive execution time vs algebird's HLL. 
+This test is executed on synthetic data of 1 / 10 / 20 40 / 80 / 100 and 500 Million unique elements.
+The generator used is [GenerateMillionKeys.scala](GenerateMillionKeys.scala). Data are pushed into HDFS,
+and then queried through Hive and then through scalding/algebird's *HLL*. 
 
 ## Hive 0.13 results
 
@@ -39,15 +41,28 @@ This test is executed on synthetic data generated using [GenerateMillionKeys.sca
 |        100MillionUnique         |   3GB  |  23   |    1     |       99,707,828 |       100,185,762 |   46 seconds   |
 |        500MillionUnique         | 15,3GB | 114   |    1     |      495,467,613 |       500,631,225 |   52 seconds   |
 
-The above measurements are with using *12-bits* [ Where error rate is : 1.04 / sqrt (2^{bits}) ] ~ 1.6 % 
-By using *20-bits* the average error rate is ~ 0.1 % and the execution time increases marginally by 1-2 seconds.
+The above measurements are with using *12-bits* [ Where error rate is : 1.04 / sqrt (2^{bits}) ] ~ 1.6 % for HyperLogLog
+By using *20-bits* the average error rate is ~ 0.1 % and the execution time increases marginally by just 1-2 seconds.
 
-# COUNTING Top-N
+## Conclusions 
 
-In this test, we will be calculating the frequency of the top-100 Wikipedia authors - using a ~ [20 GByte](../../../../../datasets/wikipedia/README.md) Wikipedia dataset, containing more than 400 M lines
-(403,802,472 lines) and 5,686,427 unique authors
+When counting cardinality on high volume data, think no more ! 
+HyperLogLog is the actual winner for streaming and batch calculations.
+
+# CALCULATING HISTOGRAMS
+
+In this test, we will calculate the frequency table of the top-100 Wikipedia authors - using a 
+[20 GByte](../../../../../../../datasets/wikipedia/README.md) Wikipedia dataset, containing more than 
+400 M lines (403,802,472 lines) with 5,686,427 unique authors
 
 ## Hive 0.13 results
+
+
+| | | |
+|-|-|-|
+| HIVE Query     | SELECT ContributorID, COUNT(ContributorID) AS CC  FROM wikipedia GROUP BY ContributorID ORDER BY CC DESC LIMIT 10 | 
+| Execution Plan | 74 Map - 19 Reduce - 4 Map - 1 Reduce |
+| Execution Time | 77 seconds |
 
 |            HIVE Query           | Execution Plan | Execution Time | 
 |:-------------------------------:| --------------:| --------------:| 
