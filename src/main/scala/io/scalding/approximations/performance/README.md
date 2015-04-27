@@ -58,8 +58,8 @@ In this test, we will calculate the frequency table of the top-100 Wikipedia aut
 ## Hive 0.13 results
 
 
-| | | |
-|-|-|-|
+| | |
+|-|-|
 | HIVE Query     | SELECT ContributorID, COUNT(ContributorID) AS CC  FROM wikipedia GROUP BY ContributorID ORDER BY CC DESC LIMIT 10 | 
 | Execution Plan | 74 Map - 19 Reduce - 4 Map - 1 Reduce |
 | Execution Time | 77 seconds |
