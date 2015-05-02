@@ -25,7 +25,7 @@ class WikipediaBF(args:Args) extends Job(args) {
   val wikiData = TypedPipe.from(TypedTsv[Wikipedia.WikipediaType](input))
     .map { Wikipedia.fromTuple }
     .aggregate(bfAggregator)
-    .map { bf:BF => io.scalding.approximations.Utils.serialize(bf) }
+//    .map { bf:BF => io.scalding.approximations.Utils.serialize(bf) }
     .write( TypedCsv(serialized) )
 
 }

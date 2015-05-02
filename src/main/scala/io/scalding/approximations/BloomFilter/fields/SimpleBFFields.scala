@@ -8,7 +8,7 @@ import com.twitter.scalding._
  *
  * @author Antonios Chalkiopoulos - http://scalding.io
  */
-class BFExampleFields(args:Args) extends Job(args) with FieldConversions {
+class SimpleBFFields(args:Args) extends Job(args) with FieldConversions {
 
   // Bloom Filter properties
   val size = 100000    // 100 K unique elements
@@ -29,14 +29,12 @@ class BFExampleFields(args:Args) extends Job(args) with FieldConversions {
       }
     }
 
-
   // Display some data to the screen
   pipe.map('bloom->'report) {x:BF =>
     println( "5000 " + x.contains("5000").isTrue )
     println( "195000 " + x.contains("195000").isTrue)
     ""
   }
-
 
   // Serialize the BF
   pipe
@@ -46,4 +44,13 @@ class BFExampleFields(args:Args) extends Job(args) with FieldConversions {
    pipe
     .write(Tsv(output))
 
+}
+
+object SimpleBFFieldsRunner extends App {
+  import org.apache.hadoop.conf.Configuration
+  import org.apache.hadoop.util.ToolRunner
+  val timer = io.scalding.approximations.Utils.withTimeCalc("BF time") {
+    ToolRunner.run(new Configuration, new Tool, (classOf[SimpleBFFields].getName :: "--local" :: args.toList).toArray)
+  }
+  println(s"Execution time: $timer msec")
 }

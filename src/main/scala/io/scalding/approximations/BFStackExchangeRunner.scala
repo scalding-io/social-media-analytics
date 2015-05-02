@@ -15,7 +15,7 @@ import org.apache.hadoop.util.ToolRunner
  */
 object BFStackExchangeRunner extends App {
 
-  ToolRunner.run(new Configuration, new Tool, (classOf[BFStackExchangeUsersPostExtractor].getName ::
+  val timer = ToolRunner.run(new Configuration, new Tool, (classOf[BFStackExchangeUsersPostExtractor].getName ::
     "--local" :: "--minAge" :: "18" :: "--maxAge" :: "21" ::
     "--posts" :: "datasets/stackexchange/posts.tsv" :: "--users" :: "datasets/stackexchange/users.tsv" ::
     "--output":: "results/BF-StackExchangeUsersPost.tsv" :: args.toList).toArray)

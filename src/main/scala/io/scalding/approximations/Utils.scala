@@ -23,5 +23,21 @@ object Utils {
     is.readObject().asInstanceOf[T]
   }
 
+  /**
+   * A `helper` method. Using this method we can `wrap` a block of code and count the time
+   * required to complete the execution of that block of code
+   */
+  def withTimeCalc(blockDescr: String)( block : => Unit): Long = {
+    println(blockDescr)
+    val start = System.currentTimeMillis()
+    var end = 0l
+    try {
+      block
+    } finally {
+      end = System.currentTimeMillis()
+    }
+    end - start
+  }
+
 }
 
