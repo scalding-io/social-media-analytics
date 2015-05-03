@@ -11,6 +11,7 @@ import com.twitter.scalding._
  */
 class SimpleBF(args:Args) extends Job(args) {
 
+  // Implicit is required for `sum` operation
   implicit val bloomFilterMonoid = BloomFilter(numEntries = 1000000 , fpProb = 0.02D)
 
   // Generate and add 100K ids into the (Bloom) filter

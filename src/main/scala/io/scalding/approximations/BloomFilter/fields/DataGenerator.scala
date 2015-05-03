@@ -1,4 +1,4 @@
-package io.scalding.approximations.BloomFilter
+package io.scalding.approximations.BloomFilter.fields
 
 import com.twitter.scalding._
 

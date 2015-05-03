@@ -15,19 +15,19 @@ In this repository you can find code examples on the following approximation alg
  * **CMS** : Count-Min sketch
 
 Using [Scalding](https://github.com/twitter/scalding) & [algebird](https://github.com/twitter/algebird/) and sample datasets from wikipedia, 
-stackexchange and also synthetic data are used to demonstrate the capabilities of approximation algorithms and to present use cases and performance measurements. 
+stackexchange and also synthetic data the capabilities of approximation algorithms are demonstrated together with use cases and performance measurements. 
 
 For performance comparisons we are comparing Hive against Scalding & Algebird. 
 
 Overall i hope that together with the book, this code repository can bring some more light into the usefulness of HLL, 
-BF, CM sketches in modern analytics either in batch mode (MapReduce) or in a different execution fabrics.
+BF, CMS in modern analytics either in batch mode (MapReduce) or in other execution fabrics.
 
 # Performance evaluation 
 
-The setup is a `Cloudera 5.2.4` Hadoop cluster consisting of 7 **x** `r3.8xlarge` Amazon EC2 nodes, each offering:
+The setup is a `Cloudera 5.2.4` Hadoop cluster consisting of `7 x r3.8xlarge` Amazon EC2 nodes, each offering:
  + 32 CPUs
  + 244 GB RAM
- + 3 x 1 TeraByte magnetic EBS volumes
+ + 3 x 1 TByte magnetic EBS volumes
 
 The technologies evaluated are:
  + Scalding version = `0.13.1`
@@ -64,13 +64,15 @@ Data are pushed into HDFS, and then queried through Hive and then through scaldi
 |        100MillionUnique         |   3GB  |  23   |    1     |       99,707,828 |       100,185,762 |   46 seconds   |
 |        500MillionUnique         | 15,3GB | 114   |    1     |      495,467,613 |       500,631,225 |   52 seconds   |
 
-The above measurements are with using *12-bits* [ Where error rate is : `1.04 / sqrt (2^{bits})` ] ~ 1.6 % for HyperLogLog
-By using *20-bits* the average error rate is ~ 0.1 % and the execution time increases marginally by just 1-2 seconds.
+The above measurements are with using **12-bits** [ Where error rate is : `1.04 / sqrt (2^{bits})` ] resulting in a HLL (HyperLogLog) with an average 1.6 % estimation error.
+
+By using **20-bits** the average error rate is ~ 0.1 % and execution time increases marginally by just 1-2 seconds.
 
 ## Conclusions 
 
-When counting cardinality on high volume data, **think no more** !!! 
-HyperLogLog is the actual winner for streaming and batch calculations.
+When counting cardinality on high volume data, **think no more** !!!
+
+HyperLogLog is the actual winner in streaming and batch calculations.
 
 # CALCULATING HISTOGRAMS
 
@@ -82,7 +84,7 @@ Three experiments are performed:
 
 * Calculation of Top100 heavy hitters on 5 million unique elements
 * Calculation of Top100 heavy hitters on 200 million unique elements
-* Calculation of multiple histograms in a single pass: Top-10 wikipedia edits/seconds, Top-100 authors, Frequencies of 12 months, and 24 hours
+* Calculation of multiple histograms in a single pass: Top-10 wikipedia edits/seconds, Top-100 authors, Frequencies of 12 months, and frequencies of 24 hours
 
 ## Experiment - TopN on 5 million unique elements 
 
@@ -106,7 +108,8 @@ Getting the top-100 authors
 
 ## Experiment - TopN on 200 million unique elements
 
-To simulate a larger experiment we will now calculate the histogram of the seconds with the highest writes/seconds
+To simulate a larger experiment we will now calculate the histogram of the seconds with the highest writes/seconds.
+
 There are 200 million unique seconds where one or more edits were performed.
 
 ### Hive 0.13 results
@@ -180,9 +183,10 @@ using 74 JVMs (map-tasks) on the cluster and for every query we are forced to re
  
 ## Conclusions
 
-BF is extremely fast for small data sets. Generating a BF for 100K unique elements requires just a few seconds
-BF in Hadoop is best for small to medium datasets 100K .. 1-2M unique elements. Anything more than that generates large records that MapReduce is not comfortably handling
-Membership queries can be executed on BF with millisecond latencies.
+* BF is extremely fast for small data sets. Generating a BF for 100K unique elements requires just a few seconds
+* BF in Hadoop is best for small to medium datasets 100K .. 1-2M unique elements. Anything more than that generates large records that MapReduce is not comfortably handling
+* BF requires 1 byte per element when configured with 2% estimation error
+* Membership queries can be executed on BF with millisecond latencies.
 
 # Quickstart
   
