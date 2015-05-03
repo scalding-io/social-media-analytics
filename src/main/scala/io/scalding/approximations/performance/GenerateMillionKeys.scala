@@ -12,14 +12,13 @@ import java.io._
  *   40 Million keys    -     1,2 GBytes
  *   80 Million keys    -     2,4 GBytes
  *  100 Million keys    -     3,0 GBytes
- *  500 Million keys    -    15,x GBytes
+ *  500 Million keys    -    15,3 GBytes
  *
  * @author Antonios Chalkiopoulos - http://scalding.io
  */
 object GenerateMillionKeys extends App {
 
   /**
-   *
    * @param filename The filename to store into
    * @param millions Number of million of lines to generate
    * @param percentageUnique % of keys to be unique - by default 100% of the keys are unique

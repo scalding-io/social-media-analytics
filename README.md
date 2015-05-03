@@ -14,8 +14,8 @@ In this repository you can find code examples on the following approximation alg
  * **BF** :  Bloom Filters
  * **CMS** : Count-Min sketch
 
-Using [Scalding](https://github.com/twitter/scalding) & [algebird](https://github.com/twitter/algebird/). Sample datasets from wikipedia, 
-stackexchange and also synthetic data are used to demonstrate the capabilities of approximation algorithms, and to present use case and performance measurements. 
+Using [Scalding](https://github.com/twitter/scalding) & [algebird](https://github.com/twitter/algebird/) and sample datasets from wikipedia, 
+stackexchange and also synthetic data are used to demonstrate the capabilities of approximation algorithms and to present use cases and performance measurements. 
 
 For performance comparisons we are comparing Hive against Scalding & Algebird. 
 
@@ -24,15 +24,15 @@ BF, CM sketches in modern analytics either in batch mode (MapReduce) or in a dif
 
 # Performance evaluation 
 
-The setup is a Cloudera 5.2.4 Hadoop cluster consisting of 7 `r3.8xlarge` amazon nodes, each offering:
+The setup is a `Cloudera 5.2.4` Hadoop cluster consisting of 7 **x** `r3.8xlarge` Amazon EC2 nodes, each offering:
  + 32 CPUs
  + 244 GB RAM
- + 3 * 1 TeraByte magnetic EBS volumes
+ + 3 x 1 TeraByte magnetic EBS volumes
 
 The technologies evaluated are:
- + Scalding version = 0.13.1
- + Algebird version = 0.90
- + Hive version = 0.13.1-cdh5.2.4
+ + Scalding version = `0.13.1`
+ + Algebird version = `0.90`
+ + Hive version = `0.13.1-cdh5.2.4`
 
 # COUNTING CARDINALITY
 
@@ -64,25 +64,25 @@ Data are pushed into HDFS, and then queried through Hive and then through scaldi
 |        100MillionUnique         |   3GB  |  23   |    1     |       99,707,828 |       100,185,762 |   46 seconds   |
 |        500MillionUnique         | 15,3GB | 114   |    1     |      495,467,613 |       500,631,225 |   52 seconds   |
 
-The above measurements are with using *12-bits* [ Where error rate is : 1.04 / sqrt (2^{bits}) ] ~ 1.6 % for HyperLogLog
+The above measurements are with using *12-bits* [ Where error rate is : `1.04 / sqrt (2^{bits})` ] ~ 1.6 % for HyperLogLog
 By using *20-bits* the average error rate is ~ 0.1 % and the execution time increases marginally by just 1-2 seconds.
 
 ## Conclusions 
 
-When counting cardinality on high volume data, think no more ! 
+When counting cardinality on high volume data, **think no more** !!! 
 HyperLogLog is the actual winner for streaming and batch calculations.
 
 # CALCULATING HISTOGRAMS
 
 In this test, we will calculate the frequency table of the top-100 Wikipedia authors - using a 
-[20 GByte](datasets/wikipedia/README.md) Wikipedia dataset, containing more than 400 M lines (403,802,472 lines) 
+[20 GByte](datasets/wikipedia/) Wikipedia dataset, containing more than 400 M lines (403,802,472 lines) 
 with 5,686,427 unique authors
 
 Three experiments are performed:
 
 * Calculation of Top100 heavy hitters on 5 million unique elements
 * Calculation of Top100 heavy hitters on 200 million unique elements
-* Calculation of multiple histograms in a single pass: Top-10 wikipedia edits/seconds, Top-100 authors, Top-12 months, Top-24 hours
+* Calculation of multiple histograms in a single pass: Top-10 wikipedia edits/seconds, Top-100 authors, Frequencies of 12 months, and 24 hours
 
 ## Experiment - TopN on 5 million unique elements 
 
@@ -165,10 +165,10 @@ CMS (Count-Min-Sketch) offers the benefits:
 + Requires significantly small memory
 + Allows us to calculate 10s or even 100nds of histograms on a data set on a single pass
 
-# USING BLOOM FILTERS
+# BLOOM FILTERS
 
 Look-ups can be **very** expensive at times. For example on HIVE the following lookup takes 23 seconds to be executed,
-using 74 JVMs (map-tasks) on the cluster. 
+using 74 JVMs (map-tasks) on the cluster and for every query we are forced to re-read the whole 20GB dataset. 
 
     SELECT * FROM wikipedia WHERE ContributorID == 123456789;
 
@@ -178,24 +178,11 @@ using 74 JVMs (map-tasks) on the cluster.
       io.scalding.approximations.BloomFilter.WikipediaBF --hdfs \
       --input datasets/wikipedia/wikipedia-revisions
  
-....
-
-The following implicit join notation is supported starting with Hive 0.13.0 
-
-    SELECT * FROM unique1M     t1,  unique10M  t10 WHERE  t1.key ==  t10.key      # 68 sec
-    SELECT * FROM unique10M   t10,  unique20M  t20 WHERE t10.key ==  t20.key      # 94 sec
-    SELECT * FROM unique10M   t10, unique100M t100 WHERE t10.key == t100.key      # 115 sec       15 map / 4 reduce
-    SELECT * FROM unique20M   t20, unique100M t100 WHERE t20.key == t100.key      # 120 sec       16 map / 4 reduce
-    SELECT * FROM unique100M t100, unique100M t100a WHERE t100.key == t100a.key   # 275 sec       12 map / 3 reduce
-     
-    SELECT * FROM unique1M     t1,  unique1M  t1a WHERE  t1.key ==  t1a.key      # 41  sec
-    SELECT * FROM unique10M   t10,  unique10M  t10a WHERE  t10.key ==  t10a.key  # 110 sec
-        
 ## Conclusions
 
-# Notes
-
-To reproduce the above performance measurements see [NOTES.md](NOTES.md)
+BF is extremely fast for small data sets. Generating a BF for 100K unique elements requires just a few seconds
+BF in Hadoop is best for small to medium datasets 100K .. 1-2M unique elements. Anything more than that generates large records that MapReduce is not comfortably handling
+Membership queries can be executed on BF with millisecond latencies.
 
 # Quickstart
   
@@ -219,6 +206,10 @@ to run the Hadoop JAR file
              --posts datasets/stackexchange/posts.tsv --users datasets/stackexchange/users.tsv \
              --minAge 18 --maxAge 21 --output results/BF-StackExchangeUsersPost
     $ hadoop fs -ls results/BF-StackExchangeUsersPost
+
+# Notes
+
+Some notes to reproduce the above performance measurements are [here](src/main/scala/io/scalding/approximations/performance/NOTES.md)
 
 ## FAQ
 
