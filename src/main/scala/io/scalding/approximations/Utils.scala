@@ -14,7 +14,6 @@ object Utils {
     out.writeObject(dataStructure)
     out.close()
     stream.close()
-
     stream.toByteArray
   }
 
