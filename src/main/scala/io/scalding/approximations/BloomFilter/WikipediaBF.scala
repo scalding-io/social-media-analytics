@@ -38,7 +38,7 @@ class WikipediaBF(args:Args) extends Job(args) {
   // Also as HLL is an approximate count we will add 10 % to the size of the filters (* 1.1)
   val BFilters =
     wikiHLL.map {
-      case (key,value) => (key, BloomFilter(numEntries = (value*1.1).toInt , fpProb = 0.02D) )
+      case (key,value) => (key.substring(0,7), BloomFilter(numEntries = (value*1.1).toInt , fpProb = 0.02D) )
     }
   // Example output is =>   Key = 2011-02 , Value = BloomFilterMonoid(164784,0.02)
 
@@ -53,7 +53,7 @@ class WikipediaBF(args:Args) extends Job(args) {
   // All that is left to happen is to create a BF for every item in the group and then UNION them together
   val result = wikiData
     .mapValues { case (wiki, bf) =>
-      bf.create(wiki.ContributorID.toString)
+      bf.create(wiki.ContributorID + "")
     }
     .reduce{ (left,right) => left ++ right }
     .mapValues { bf:BF => io.scalding.approximations.Utils.serialize(bf) }
