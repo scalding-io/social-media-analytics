@@ -16,10 +16,10 @@ class PrecomputedBF(args:Args) extends Job(args) {
       serialized:Array[Byte] => io.scalding.approximations.Utils.deserialize[BF](serialized)
     }
 
-  val usersBF = typed.IterablePipe[String](List( "ABCD", "EFGH", "123" ))
+  val itemsPipe = typed.IterablePipe[String](List( "ABCD", "EFGH", "123" ))
 
   BF
-    .cross(usersBF)
+    .cross(itemsPipe)
     .map { case (bf: BF, item: String) =>
       val existsInBF = bf.contains(item)
       println(s"Item $item exists in BF : $existsInBF")
