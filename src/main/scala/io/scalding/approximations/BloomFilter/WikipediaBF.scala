@@ -13,7 +13,7 @@ import io.scalding.approximations.model.Wikipedia
  */
 class WikipediaBF(args:Args) extends Job(args) {
 
-  val input  = args.getOrElse("input" ,"datasets/wikipedia/wikipedia-revisions") // -sample.tsv
+  val input  = args.getOrElse("input" ,"datasets/wikipedia/wikipedia-revisions-sample.tsv") //
   val serialized = args.getOrElse("serialized","results/wikipedia-per-month-BF-serialized")
 
   // We don't know a priori how big the filters need to be
@@ -29,6 +29,9 @@ class WikipediaBF(args:Args) extends Job(args) {
     .aggregate(hllAggregator)
     .mapped
     .map{ case (key:String,value:HLL) => (key,value.approximateSize.estimate) }
+    .groupBy { _._1 }
+    .sum
+    .values
   // Example output is =>    Key = 2011-02 , Value = 149804
 
   // Now that we know how large each group is, we will instantiate one BloomFilterMonoid per group
@@ -48,7 +51,7 @@ class WikipediaBF(args:Args) extends Job(args) {
     .join { BFilters }
 
   // All that is left to happen is to create a BF for every item in the group and then UNION them together
-  val a = wikiData
+  val result = wikiData
     .mapValues { case (wiki, bf) =>
       bf.create(wiki.ContributorID.toString)
     }
