@@ -22,15 +22,18 @@ class WikipediaBF(args:Args) extends Job(args) {
     .sizeAggregator(12)
     .composePrepare[Wikipedia](_.ContributorID.toString.getBytes("UTF-8"))
 
+//  import TDsl._
+
   val wikiHLL = TypedPipe.from(TypedTsv[Wikipedia.WikipediaType](input))
     .map { Wikipedia.fromTuple }
     .map { wiki => wiki.copy(DateTime = wiki.DateTime.substring(0,7)) } // extract YYYY-MM
     .groupBy { wiki => wiki.DateTime }
     .aggregate(hllAggregator)
     .mapped
-    .map{ case (key:String,value:HLL) => (key,value.approximateSize.estimate) }
-    .groupBy { _._1 }
-    .sum
+    .map { case (key:String,value:HLL) => (key,value.approximateSize.estimate) }
+    .sumByKey
+    .toTypedPipe
+    .groupAll
     .values
   // Example output is =>    Key = 2011-02 , Value = 149804
 
@@ -38,7 +41,7 @@ class WikipediaBF(args:Args) extends Job(args) {
   // Also as HLL is an approximate count we will add 10 % to the size of the filters (* 1.1)
   val BFilters =
     wikiHLL.map {
-      case (key,value) => (key.substring(0,7), BloomFilter(numEntries = (value*1.1).toInt , fpProb = 0.02D) )
+      case (key,value) => (key, BloomFilter(numEntries = (value*1.1).toInt , fpProb = 0.02D) )
     }
   // Example output is =>   Key = 2011-02 , Value = BloomFilterMonoid(164784,0.02)
 
