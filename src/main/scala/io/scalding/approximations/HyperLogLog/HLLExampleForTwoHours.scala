@@ -38,6 +38,10 @@ class HLLExampleForTwoHours(args: Args) extends Job(args) {
   val hour2List = (20001 to 120000).map( Users ).toList
   val hour2 = TypedPipe.from(hour2List)
 
+  val hll = hour2
+    .aggregate(unique)
+
+
   hour2
     .aggregate(unique)
     .map{ x => println(s"Cardinality of HOUR 2: $x"); x }
@@ -48,4 +52,13 @@ class HLLExampleForTwoHours(args: Args) extends Job(args) {
     .map{ x => println(s"Cardinality of HOUR 1 & HOUR: 2 $x"); x }
     .write(TypedTsv("results/HLL-BothHours"))
 
+}
+
+object HLLExampleForTwoHoursRunner extends App {
+  import org.apache.hadoop.conf.Configuration
+  import org.apache.hadoop.util.ToolRunner
+  val timer = io.scalding.approximations.Utils.withTimeCalc("Running HLLExampleForTwoHours in --local mode") {
+    ToolRunner.run(new Configuration, new Tool, (classOf[HLLExampleForTwoHours].getName :: "--local" :: args.toList).toArray)
+  }
+  println(s"Execution time: $timer msec")
 }

@@ -2,7 +2,6 @@ package io.scalding.approximations.BloomFilter
 
 import com.twitter.algebird._
 import com.twitter.scalding._
-import com.twitter.scalding.source.TypedSequenceFile
 import io.scalding.approximations.model.Wikipedia
 
 /**
@@ -22,8 +21,6 @@ class WikipediaBF(args:Args) extends Job(args) {
     .sizeAggregator(12)
     .composePrepare[Wikipedia](_.ContributorID.toString.getBytes("UTF-8"))
 
-//  import TDsl._
-
   val wikiHLL = TypedPipe.from(TypedTsv[Wikipedia.WikipediaType](input))
     .map { Wikipedia.fromTuple }
     .map { wiki => wiki.copy(DateTime = wiki.DateTime.substring(0,7)) } // extract YYYY-MM
@@ -35,42 +32,45 @@ class WikipediaBF(args:Args) extends Job(args) {
     .toTypedPipe
     .groupAll
     .values
+    // Also let's store the HLL results
+    .write(TypedTsv("results/wikipedia-per-month-HLL.tsv") )
+
   // Example output is =>    Key = 2011-02 , Value = 149804
 
   // Now that we know how large each group is, we will instantiate one BloomFilterMonoid per group
   // Also as HLL is an approximate count we will add 10 % to the size of the filters (* 1.1)
-  val BFilters =
-    wikiHLL.map {
-      case (key,value) => (key, BloomFilter(numEntries = (value*1.1).toInt , fpProb = 0.02D) )
-    }
+//  val BFilters =
+//    wikiHLL.map {
+//      case (key,value) => (key, BloomFilter(numEntries = (value*1.1).toInt , fpProb = 0.02D) )
+//    }
   // Example output is =>   Key = 2011-02 , Value = BloomFilterMonoid(164784,0.02)
 
   // All the above calculations have been done JUST for creating optimal sized BF
   // So now, we will read in all the data, group by month and JOIN them with the initialized BloomFilters
-  val wikiData = TypedPipe.from(TypedTsv[Wikipedia.WikipediaType](input))
-    .map { Wikipedia.fromTuple }
-    .map { wiki => wiki.copy(DateTime = wiki.DateTime.substring(0,7)) } // extract YYYY-MM
-    .groupBy { wiki => wiki.DateTime }
-    .join { BFilters }
+//  val wikiData = TypedPipe.from(TypedTsv[Wikipedia.WikipediaType](input))
+//    .map { Wikipedia.fromTuple }
+//    .map { wiki => wiki.copy(DateTime = wiki.DateTime.substring(0,7)) } // extract YYYY-MM
+//    .groupBy { wiki => wiki.DateTime }
+//    .join { BFilters }
+//    .toTypedPipe
+//    .write(TypedTsv("joined"))
 
   // All that is left to happen is to create a BF for every item in the group and then UNION them together
-  val result = wikiData
-    .mapValues { case (wiki, bf) =>
-      bf.create(wiki.ContributorID + "")
-    }
-    .reduce{ (left,right) => left ++ right }
-    .mapValues { bf:BF => io.scalding.approximations.Utils.serialize(bf) }
-    .toTypedPipe
-    .write(TypedSequenceFile("results/wikipedia-per-month-BF"))
+  // : TypedPipe[(String, (Wikipedia, BloomFilterMonoid))]
+//  val result = wikiData
+//    .mapValues { case (wiki:Wikipedia, bf:BloomFilterMonoid) =>
+//      bf.create(wiki.ContributorID + "")
+//    }
+//    .reduce{ (left,right) => left ++ right }
+//    .mapValues { bf:BF => io.scalding.approximations.Utils.serialize(bf) }
+//    .toTypedPipe
+//    .write(TypedSequenceFile("results/wikipedia-per-month-BF"))
+//
+//    // And if you want to write ONE file per month - chose an option:
+//    // .toPipe('month, 'bfserialized)
+//    // .write(TemplatedSequenceFile("results/wikipedia-per-month-BF/","month-%s",'month))
+//    // .write(PartitionedSequenceFile("results/wikipedia-per-month-BF/",pathFields = 'month))
 
-    // And if you want to write ONE file per month - chose an option:
-    // .toPipe('month, 'bfserialized)
-    // .write(TemplatedSequenceFile("results/wikipedia-per-month-BF/","month-%s",'month))
-    // .write(PartitionedSequenceFile("results/wikipedia-per-month-BF/",pathFields = 'month))
-
-  // Also let's store the HLL results
-  wikiHLL
-    .write(TypedTsv("results/wikipedia-per-month-HLL.tsv") )
 
 }
 
