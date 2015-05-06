@@ -57,12 +57,10 @@ class WikipediaBF(args:Args) extends Job(args) {
 
   // All that is left to happen is to create a BF for every item in the group and then UNION them together
   val result = wikiData
-    .mapValues { case (contributorID:Long, bf:BloomFilterMonoid) =>
-      bf.create(contributorID + "")
-    }
+    .map { case(month,(contributorID,bf)) => (month, bf.create(contributorID+""))}
     .group
     .reduce{ (left,right) => left ++ right }
-//    .mapValues { bf:BF => io.scalding.approximations.Utils.serialize(bf) }
+////    .mapValues { bf:BF => io.scalding.approximations.Utils.serialize(bf) }
     .toTypedPipe
 
    result
