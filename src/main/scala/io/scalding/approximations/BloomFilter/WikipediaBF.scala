@@ -53,23 +53,30 @@ class WikipediaBF(args:Args) extends Job(args) {
     .group
     .join { BFilters }
     .toTypedPipe
-    .write(TypedTsv("joined"))
+//    .write(TypedTsv("joined"))
 
   // All that is left to happen is to create a BF for every item in the group and then UNION them together
-//  val result: TypedPipe[(String, BF)] = wikiData
-//    .mapValues { case (contributorID:Long, bf:BloomFilterMonoid) =>
-//      bf.create(contributorID + "")
-//    }
-//    .reduce{ (left,right) => left ++ right }
+  val result = wikiData
+    .mapValues { case (contributorID:Long, bf:BloomFilterMonoid) =>
+      bf.create(contributorID + "")
+    }
+    .group
+    .reduce{ (left,right) => left ++ right }
 //    .mapValues { bf:BF => io.scalding.approximations.Utils.serialize(bf) }
-//    .toTypedPipe
-//    .write(TypedSequenceFile("results/wikipedia-per-month-BF"))
-//
-//    // And if you want to write ONE file per month - chose an option:
-//    // .toPipe('month, 'bfserialized)
-//    // .write(TemplatedSequenceFile("results/wikipedia-per-month-BF/","month-%s",'month))
-//    // .write(PartitionedSequenceFile("results/wikipedia-per-month-BF/",pathFields = 'month))
+    .toTypedPipe
 
+   result
+    .write(TypedTsv("results/wikipedia-per-month-BF1"))
+   result
+    .write(source.TypedSequenceFile("results/wikipedia-per-month-BF2"))
+
+    // And if you want to write ONE file per month - use either TemplatedSequenceFile or PartitionedSequenceFile
+    // Note that those taps work only on --hdfs mode (!)
+
+  result
+     .toPipe('month, 'bf)
+     .write(TemplatedSequenceFile("results/wikipedia-per-month-BF/","month-%s",'month))
+    // .write(PartitionedSequenceFile("results/wikipedia-per-month-BF/",pathFields = 'month))
 
 }
 
