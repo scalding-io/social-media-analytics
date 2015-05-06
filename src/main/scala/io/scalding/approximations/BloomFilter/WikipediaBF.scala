@@ -12,7 +12,7 @@ import io.scalding.approximations.model.Wikipedia
  */
 class WikipediaBF(args:Args) extends Job(args) {
 
-  val input  = args.getOrElse("input" ,"datasets/wikipedia/wikipedia-revisions") // -sample.tsv
+  val input  = args.getOrElse("input" ,"datasets/wikipedia/wikipedia-revisions-sample.tsv") //
   val serialized = args.getOrElse("serialized","results/wikipedia-per-month-BF-serialized")
 
   // We don't know a priori how big the filters need to be
@@ -46,34 +46,26 @@ class WikipediaBF(args:Args) extends Job(args) {
 
   // All the above calculations have been done JUST for creating optimal sized BF
   // So now, we will read in all the data, group by month and JOIN them with the initialized BloomFilters
-  val wikiData: TypedPipe[(String, (Long, BloomFilterMonoid))] = TypedPipe.from(TypedTsv[Wikipedia.WikipediaType](input))
+  val wikiData: TypedPipe[(String, (List[Long], BloomFilterMonoid))] = TypedPipe.from(TypedTsv[Wikipedia.WikipediaType](input))
     .map { Wikipedia.fromTuple }
     .map { wiki => ( wiki.DateTime.substring(0,7), wiki.ContributorID ) }
     // extract YYYY-MM
     .group
+    .toList
     .join { BFilters }
     .toTypedPipe
-//    .write(TypedTsv("joined"))
+    .write(TypedTsv("joined"))
 
   // All that is left to happen is to create a BF for every item in the group and then UNION them together
   val result = wikiData
-    .map { case(month,(contributorID,bf)) => (month, bf.create(contributorID+""))}
-    .group
-    .reduce{ (left,right) => left ++ right }
-////    .mapValues { bf:BF => io.scalding.approximations.Utils.serialize(bf) }
-    .toTypedPipe
-
-   result
-    .write(TypedTsv("results/wikipedia-per-month-BF1"))
-   result
+    .map { case(month,(contributorIDlist,bf)) => (month, bf.create(contributorIDlist.map(_+""):_*))}
     .write(source.TypedSequenceFile("results/wikipedia-per-month-BF2"))
 
     // And if you want to write ONE file per month - use either TemplatedSequenceFile or PartitionedSequenceFile
     // Note that those taps work only on --hdfs mode (!)
-
   result
-     .toPipe('month, 'bf)
-     .write(TemplatedSequenceFile("results/wikipedia-per-month-BF/","month-%s",'month))
+    .toPipe('month, 'bf)
+    .write(TemplatedSequenceFile("results/wikipedia-per-month-BF/","month-%s",'month))
     // .write(PartitionedSequenceFile("results/wikipedia-per-month-BF/",pathFields = 'month))
 
 }
