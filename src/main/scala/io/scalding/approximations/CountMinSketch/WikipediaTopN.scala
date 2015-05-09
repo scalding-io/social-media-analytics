@@ -13,21 +13,38 @@ import io.scalding.approximations.model.Wikipedia
  */
 class WikipediaTopN(args: Args) extends Job(args) {
 
-  val input  = args.getOrElse("input" ,"datasets/wikipedia/wikipedia-revisions-sample.tsv")
+  val input  = args.getOrElse("input" ,"datasets/wikipedia/wikipedia-revisions-sample.tsv") //
   val output = args.getOrElse("output","results/wikipedia-Top100")
   val topN   = args.getOrElse("topN","100").toInt
 
   // Construct a Count-Min Sketch monoid and bring in helping implicit conversions
   import CMSHasherImplicits._
-  implicit val cmsMonoid: TopNCMSMonoid[Long] =
+  val cmsMonoid: TopNCMSMonoid[Long] =
     TopNCMS.monoid[Long](eps=0.01, delta=0.02, seed=(Math.random()*100).toInt, heavyHittersN = topN)
 
   val topNaggregator = TopNCMSAggregator(cmsMonoid)
     .composePrepare[Wikipedia](_.ContributorID)
 
-  val wikiData = TypedPipe.from(TypedTsv[Wikipedia.WikipediaType](input))
+  val wikiData: ValuePipe[TopCMS[Long]] = TypedPipe.from(TypedTsv[Wikipedia.WikipediaType](input))
     .map { Wikipedia.fromTuple }
     .aggregate(topNaggregator)
-    .write(TypedTsv(output))
 
+  wikiData
+    .map { cms:TopCMS[Long] =>
+      println(" + Total count in the CM sketch : " + cms.totalCount)
+      println(" + Heavy Hitters : " + cms.heavyHitters.size)
+      cms.heavyHitters.foreach( userid => { println("  - User ID : " + userid + " with estimated cardinality : " + cms.frequency(userid).estimate) } )
+      io.scalding.approximations.Utils.serialize(cms)
+    }
+    .write(source.TypedSequenceFile(output))
+
+}
+
+object WikipediaTopNRunner extends App {
+  import org.apache.hadoop.conf.Configuration
+  import org.apache.hadoop.util.ToolRunner
+  val timer = io.scalding.approximations.Utils.withTimeCalc("WikipediaTopN time") {
+    ToolRunner.run(new Configuration, new Tool, (classOf[WikipediaTopN].getName :: "--local" :: args.toList).toArray)
+  }
+  println(s"Execution time: $timer msec")
 }
