@@ -19,15 +19,24 @@ class WikipediaTopPct(args: Args) extends Job(args) {
 
   // Construct a Count-Min Sketch monoid and bring in helping implicit conversions
   import CMSHasherImplicits._
-  implicit val cmsMonoid: TopPctCMSMonoid[Long] =
+  val cmsMonoid: TopPctCMSMonoid[Long] =
     TopPctCMS.monoid[Long](eps=0.01, delta=0.02, seed=(Math.random()*100).toInt, heavyHittersPct = topPct )
 
-  val topNaggregator = TopPctCMSAggregator(cmsMonoid)
+  val topPctaggregator = TopPctCMSAggregator(cmsMonoid)
     .composePrepare[Wikipedia](_.ContributorID)
 
   val wikiData = TypedPipe.from(TypedTsv[Wikipedia.WikipediaType](input))
     .map { Wikipedia.fromTuple }
-    .aggregate(topNaggregator)
+    .aggregate(topPctaggregator)
     .write(TypedTsv(output))
 
+}
+
+object WikipediaTopPct extends App {
+  import org.apache.hadoop.conf.Configuration
+  import org.apache.hadoop.util.ToolRunner
+  val timer = io.scalding.approximations.Utils.withTimeCalc("WikipediaTopPct time") {
+    ToolRunner.run(new Configuration, new Tool, (classOf[WikipediaTopPct].getName :: "--local" :: args.toList).toArray)
+  }
+  println(s"Execution time: $timer msec")
 }
