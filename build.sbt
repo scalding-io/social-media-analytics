@@ -14,7 +14,7 @@ resolvers := Seq(
   "Maven central" at "http://repo1.maven.org/maven2/",
   "Conjars Repo" at "http://conjars.org/repo",
   "Clojars Repo" at "http://clojars.org/repo",
-  "Twitter Repo" at "http://maven.twttr.com",
+  "Twitter Repo" at "https://maven.twttr.com",
   "Cloudera Repo" at "http://repository.cloudera.com/content/repositories/releases/",
   "Cloudera Repo2" at "https://repository.cloudera.com/content/groups/cloudera-repos/",
   "Cloudera public" at "https://repository.cloudera.com/artifactory/public/",
